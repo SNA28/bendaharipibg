@@ -3,203 +3,475 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Kewangan PIBG</title>
-    <style>
-        /* Reka bentuk asas yang mudah diedit */
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; color: #333; line-height: 1.6; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1, h2 { text-align: center; color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
-        
-        /* Jadual */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #27ae60; color: white; }
-        
-        /* Borang Admin */
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        
-        /* Butang */
-        .btn { background-color: #27ae60; color: white; padding: 12px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
-        .btn:hover { background-color: #2ecc71; }
-        .btn-admin { background-color: #e74c3c; margin-bottom: 20px; width: auto; font-size: 12px; }
-        
-        /* Ringkasan & Mod Admin */
-        #bahagianAdmin { display: none; background: #e8f8f5; padding: 20px; border-radius: 5px; margin-bottom: 25px; border: 1px solid #1abc9c; }
-        .ringkasan { display: flex; justify-content: space-between; margin-bottom: 20px; padding: 15px; background: #ecf0f1; border-radius: 5px; font-weight: bold; }
-        .masuk { color: #27ae60; }
-        .keluar { color: #e74c3c; }
-        .baki { color: #2980b9; }
-        #statusSistem { text-align: center; font-size: 13px; color: #7f8c8d; margin-top: 10px; }
-    </style>
+    <title>Sistem Pengurusan Kewangan PIBG</title>
+    <!-- Tailwind CSS untuk rekaan moden -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js untuk graf bulanan -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body class="bg-gray-50 font-sans antialiased pb-12">
 
-<div class="container">
-    <h1>Portal Kewangan PIBG</h1>
-    
-    <!-- Butang Buka Mod Admin -->
-    <button class="btn btn-admin" onclick="bukaModAdmin()">Kunci Admin</button>
-
-    <div class="ringkasan">
-        <div class="masuk">Masuk: <span id="totalMasuk">RM 0.00</span></div>
-        <div class="keluar">Keluar: <span id="totalKeluar">RM 0.00</span></div>
-        <div class="baki">Baki Bersih: <span id="bakiSemasa">RM 0.00</span></div>
-    </div>
-
-    <!-- BORANG ADMIN (Tersorok secara lalai) -->
-    <div id="bahagianAdmin">
-        <h2>Rekod Transaksi Baharu</h2>
-        <form id="borangTransaksi">
-            <div class="form-group">
-                <label>Tarikh:</label>
-                <input type="date" id="txTarikh" required>
+    <!-- NAV BAR -->
+    <nav class="bg-blue-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-school-flag text-2xl text-yellow-400"></i>
+                    <div>
+                        <h1 class="text-lg font-bold tracking-wide">e-PIBG Kewangan</h1>
+                        <p class="text-xs text-blue-200">Sistem Pengurusan Kewangan PIBG</p>
+                    </div>
+                </div>
+                <!-- Status Mod (Admin / AJK) -->
+                <div class="flex items-center space-x-3">
+                    <span id="statusBadge" class="bg-gray-700 text-gray-200 text-xs px-3 py-1.5 rounded-full font-medium shadow-inner flex items-center gap-1.5">
+                        <span class="h-2 w-2 rounded-full bg-gray-400 animate-pulse"></span>
+                        Mod AJK: Lihat Sahaja
+                    </span>
+                    <button id="btnToggleMode" onclick="toggleMode()" class="bg-yellow-500 hover:bg-yellow-600 text-blue-950 font-semibold text-xs px-4 py-2 rounded-lg transition shadow-md flex items-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-lock"></i> Tukar Mod Admin
+                    </button>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Jenis (Masuk/Keluar):</label>
-                <select id="txJenis">
-                    <option value="Masuk">WANG MASUK</option>
-                    <option value="Keluar">WANG KELUAR</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Kategori:</label>
-                <input type="text" id="txKategori" placeholder="Contoh: Sumbangan PIBG / Baik Pulih" required>
-            </div>
-            <div class="form-group">
-                <label>Jumlah (RM):</label>
-                <input type="number" step="0.01" id="txJumlah" required>
-            </div>
-            <div class="form-group">
-                <label>Butiran / Penerangan:</label>
-                <textarea id="txPenerangan" rows="2" placeholder="Sila tulis butiran lengkap..." required></textarea>
-            </div>
-            <button type="submit" class="btn" id="btnSimpan">Simpan Rekod Ke Awan</button>
-        </form>
-    </div>
+        </div>
+    </nav>
 
-    <!-- JADUAL UNTUK PAPARAN AJK -->
-    <h2>Penyata Buku Tunai</h2>
-    <div id="statusSistem">Menyambung ke Pangkalan Data...</div>
-    <table>
-        <thead>
-            <tr>
-                <th>Tarikh</th>
-                <th>Kategori</th>
-                <th>Butiran</th>
-                <th>Masuk</th>
-                <th>Keluar</th>
-            </tr>
-        </thead>
-        <tbody id="senaraiTransaksiBody">
-            <!-- Data dari Google Sheets akan terpapar di sini -->
-        </tbody>
-    </table>
-</div>
+    <!-- UTAMA CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
 
-<script>
-    // =========================================================
-    // SILA TAMPAL URL GOOGLE SHEETS ANDA DI DALAM KOTAK DI BAWAH
-    // =========================================================
-    const URL_GOOGLE_SHEETS = "SILA_TAMPAL_URL_WEB_APP_DI_SINI";
+        <!-- KAD RINGKASAN BAKI (DASHBOARD) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Baki Semasa -->
+            <div class="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-xl shadow-md p-6 flex items-center justify-between transition-transform hover:scale-[1.02]">
+                <div>
+                    <p class="text-sm text-blue-100 font-medium uppercase tracking-wider">Baki Semasa Akaun</p>
+                    <h3 id="txtBakiSemasa" class="text-3xl font-bold mt-1">RM 0.00</h3>
+                </div>
+                <div class="bg-blue-500/30 p-4 rounded-lg"><i class="fa-solid fa-wallet text-3xl"></i></div>
+            </div>
+            <!-- Jumlah Masuk -->
+            <div class="bg-gradient-to-br from-emerald-600 to-emerald-800 text-white rounded-xl shadow-md p-6 flex items-center justify-between transition-transform hover:scale-[1.02]">
+                <div>
+                    <p class="text-sm text-emerald-100 font-medium uppercase tracking-wider">Jumlah Duit Masuk</p>
+                    <h3 id="txtJumlahMasuk" class="text-3xl font-bold mt-1">RM 0.00</h3>
+                </div>
+                <div class="bg-emerald-500/30 p-4 rounded-lg"><i class="fa-solid fa-money-bill-trend-up text-3xl"></i></div>
+            </div>
+            <!-- Jumlah Keluar -->
+            <div class="bg-gradient-to-br from-rose-600 to-rose-800 text-white rounded-xl shadow-md p-6 flex items-center justify-between transition-transform hover:scale-[1.02]">
+                <div>
+                    <p class="text-sm text-rose-100 font-medium uppercase tracking-wider">Pengeluaran Cek / Duit Keluar</p>
+                    <h3 id="txtJumlahKeluar" class="text-3xl font-bold mt-1">RM 0.00</h3>
+                </div>
+                <div class="bg-rose-500/30 p-4 rounded-lg"><i class="fa-solid fa-money-check-dollar text-3xl"></i></div>
+            </div>
+        </div>
 
-    // Fungsi Mod Admin
-    function bukaModAdmin() {
-        let password = prompt("Sila masukkan Kata Laluan Bendahari:");
-        if (password === "admin123") {
-            document.getElementById("bahagianAdmin").style.display = "block";
-            alert("Berjaya log masuk. Borang transaksi telah dibuka.");
-        } else {
-            alert("Kata laluan salah!");
+        <!-- GRAF BULANAN -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-gray-700 font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-bar text-blue-900"></i> Aliran Kewangan Bulanan</h3>
+            <div class="h-64 relative">
+                <canvas id="chartKewangan"></canvas>
+            </div>
+        </div>
+
+        <!-- BORANG INPUT (HANYA MUNCUL JIKA MOD ADMIN) -->
+        <div id="sectionBorang" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Borang Duit Masuk -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 border-t-4 border-t-emerald-600">
+                <h3 class="text-emerald-700 font-bold mb-4 flex items-center gap-2 text-base"><i class="fa-solid fa-circle-plus"></i> Rekod Duit Masuk / Sumbangan</h3>
+                <form id="formMasuk" onsubmit="simpanDuitMasuk(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1 tracking-wider">Tarikh Transaksi</label>
+                        <input type="date" id="tarikhMasuk" required class="w-full border border-gray-300 bg-gray-50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1 tracking-wider">Kategori</label>
+                        <select id="katMasuk" required class="w-full border border-gray-300 bg-gray-50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                            <option value="Sumbangan PIBG">Sumbangan PIBG / Yuran</option>
+                            <option value="Sumbangan Luar/Korporat">Sumbangan Luar / Korporat</option>
+                            <option value="Dana Kerajaan">Dana Kerajaan</option>
+                            <option value="Aktiviti/Jualan">Aktiviti / Jualan Sekolah</option>
+                            <option value="Lain-lain">Lain-lain</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1 tracking-wider">Perincian / Nama Penyumbang</label>
+                        <input type="text" id="perincianMasuk" placeholder="Contoh: Sumbangan En. Ali / Kutipan Tingkatan 1" required class="w-full border border-gray-300 bg-gray-50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1 tracking-wider">Jumlah Amaun (RM)</label>
+                        <div class="relative rounded-lg shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">RM</span>
+                            </div>
+                            <input type="number" step="0.01" id="amaunMasuk" placeholder="0.00" required class="w-full border border-gray-300 bg-gray-50 rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition">
+                        </div>
+                    </div>
+                    <button type="submit" id="btnSimpanMasuk" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2.5 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan Duit Masuk
+                    </button>
+                </form>
+            </div>
+
+            <!-- Borang Duit Keluar -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 border-t-4 border-t-rose-600">
+                <h3 class="text-rose-700 font-bold mb-4 flex items-center gap-2 text-base"><i class="fa-solid fa-circle-minus"></i> Rekod Pengeluaran Cek / Perbelanjaan</h3>
+                <form id="formKeluar" onsubmit="simpanDuitKeluar(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1 tracking-wider">Tarikh Transaksi</label>
+                        <input type="date" id="tarikhKeluar" required class="w-full border border-gray-300 bg-gray-50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1 tracking-wider">No. Cek / No. Baucar</label>
+                            <input type="text" id="noCek" placeholder="Contoh: CEK123456" required class="w-full border border-gray-300 bg-gray-50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1 tracking-wider">Kategori Perbelanjaan</label>
+                            <select id="katKeluar" required class="w-full border border-gray-300 bg-gray-50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition">
+                                <option value="Kebajikan Murid">Kebajikan Murid / Bantuan</option>
+                                <option value="Program Sekolah">Program & Aktiviti Sekolah</option>
+                                <option value="Penyelenggaraan">Penyelenggaraan Infrastruktur</option>
+                                <option value="Sukan/Kokurikulum">Sukan & Kokurikulum</option>
+                                <option value="Lain-lain">Lain-lain Perbelanjaan</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1 tracking-wider">Perincian Penerima / Tujuan</label>
+                        <input type="text" id="perincianKeluar" placeholder="Contoh: Pembelian projektor dewan PIBG" required class="w-full border border-gray-300 bg-gray-50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1 tracking-wider">Jumlah Keluar (RM)</label>
+                        <div class="relative rounded-lg shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">RM</span>
+                            </div>
+                            <input type="number" step="0.01" id="amaunKeluar" placeholder="0.00" required class="w-full border border-gray-300 bg-gray-50 rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition">
+                        </div>
+                    </div>
+                    <button type="submit" id="btnSimpanKeluar" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold py-2.5 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan Pengeluaran Cek
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- JADUAL PAPARAN REKOD -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-5 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h3 class="text-gray-700 font-bold flex items-center gap-2 text-base"><i class="fa-solid fa-list-check text-blue-950"></i> Senarai Transaksi Kewangan PIBG</h3>
+                <div class="flex items-center gap-3">
+                    <div class="relative w-full sm:w-64">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </span>
+                        <input type="text" id="txtCarian" oninput="paparJadual()" placeholder="Cari perincian atau kategori..." class="border border-gray-300 rounded-lg pl-8 pr-3 py-1.5 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    </div>
+                    <button onclick="eksportCSV()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold px-4 py-2 rounded-lg transition border border-blue-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap shadow-sm">
+                        <i class="fa-solid fa-file-excel text-sm"></i> Eksport Excel
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead>
+                        <tr class="bg-blue-950 text-white uppercase text-xs tracking-wider">
+                            <th class="p-3.5 font-semibold">Tarikh</th>
+                            <th class="p-3.5 font-semibold">Jenis</th>
+                            <th class="p-3.5 font-semibold">Kategori</th>
+                            <th class="p-3.5 font-semibold">Perincian / Catatan / No Cek</th>
+                            <th class="p-3.5 font-semibold text-right">Masuk (RM)</th>
+                            <th class="p-3.5 font-semibold text-right">Keluar (RM)</th>
+                            <th class="p-3.5 font-semibold text-center id-tindakan hidden">Status Awan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="badanJadual" class="divide-y divide-gray-200 text-gray-700">
+                        <tr><td colspan="6" class="p-8 text-center text-gray-400"><i class="fa-solid fa-spinner animate-spin mr-2"></i>Sedang menarik data dari awan...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JAVASCRIPT LOGIK SISTEM (LIVE GOOGLE SHEETS) -->
+    <script>
+        // Pautan URL Web App anda telah dimasukkan di sini:
+        const URL_GOOGLE_SHEETS = "https://script.google.com/macros/s/AKfycbxhFQ1UpI1F0ZyZaTJ7uxG1iTLHiapIdpxk-gH4X2VOiBO3I9QUB6qo9AVuMiBWI7Y4gw/exec";
+
+        let database = [];
+        let modAdmin = false;
+        let cartaKewanganInstance = null;
+
+        function toggleMode() {
+            if (!modAdmin) {
+                let kataLaluan = prompt("Sila masukkan kata laluan PENTADBIR (Default: 1234):");
+                if (kataLaluan === "1234") {
+                    modAdmin = true;
+                    kemaskiniPaparanMod();
+                } else if (kataLaluan !== null) {
+                    alert("Kata laluan salah! Anda kekal dalam mod paparan sahaja.");
+                }
+            } else {
+                modAdmin = false;
+                kemaskiniPaparanMod();
+            }
         }
-    }
 
-    // Set tarikh ke hari ini
-    document.getElementById('txTarikh').value = new Date().toISOString().substring(0, 10);
+        function kemaskiniPaparanMod() {
+            const statusBadge = document.getElementById('statusBadge');
+            const btnToggleMode = document.getElementById('btnToggleMode');
+            const sectionBorang = document.getElementById('sectionBorang');
+            const elemenTindakan = document.querySelectorAll('.id-tindakan');
 
-    // Fungsi Baca Data
-    function muatTurunData() {
-        if (URL_GOOGLE_SHEETS === "SILA_TAMPAL_URL_WEB_APP_DI_SINI") {
-            document.getElementById('statusSistem').innerHTML = "<span style='color:red;'>RALAT: Anda belum menampal URL Google Sheets pada kod HTML.</span>";
-            return;
+            if (modAdmin) {
+                statusBadge.innerHTML = `<span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span> Mod ADMIN: Akses Penuh`;
+                statusBadge.className = "bg-emerald-950 text-emerald-200 text-xs px-3 py-1.5 rounded-full font-medium shadow-inner flex items-center gap-1.5";
+                btnToggleMode.innerHTML = `<i class="fa-solid fa-lock-open"></i> Log Keluar Admin`;
+                btnToggleMode.className = "bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs px-4 py-2 rounded-lg transition shadow-md flex items-center gap-1 cursor-pointer";
+                sectionBorang.classList.remove('hidden');
+                elemenTindakan.forEach(el => el.classList.remove('hidden'));
+            } else {
+                statusBadge.innerHTML = `<span class="h-2 w-2 rounded-full bg-gray-400 animate-pulse"></span> Mod AJK: Lihat Sahaja`;
+                statusBadge.className = "bg-gray-700 text-gray-200 text-xs px-3 py-1.5 rounded-full font-medium shadow-inner flex items-center gap-1.5";
+                btnToggleMode.innerHTML = `<i class="fa-solid fa-lock"></i> Tukar Mod Admin`;
+                btnToggleMode.className = "bg-yellow-500 hover:bg-yellow-600 text-blue-950 font-semibold text-xs px-4 py-2 rounded-lg transition shadow-md flex items-center gap-1 cursor-pointer";
+                sectionBorang.classList.add('hidden');
+                elemenTindakan.forEach(el => el.classList.add('hidden'));
+            }
+            paparJadual();
         }
 
-        fetch(URL_GOOGLE_SHEETS + "?action=read")
-            .then(response => response.json())
-            .then(data => {
-                const tBody = document.getElementById('senaraiTransaksiBody');
-                document.getElementById('statusSistem').innerHTML = "Status: Terhubung secara LIVE.";
-                tBody.innerHTML = '';
-                
-                let sumMasuk = 0;
-                let sumKeluar = 0;
+        function muatTurunDataAwan() {
+            if (URL_GOOGLE_SHEETS === "") {
+                document.getElementById('badanJadual').innerHTML = `<tr><td colspan="6" class="p-8 text-center text-rose-500 font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Ralat: URL Google Sheets tidak dijumpai!</td></tr>`;
+                return;
+            }
 
-                data.reverse().forEach(item => {
-                    let jumlahFloat = parseFloat(item.jumlah) || 0;
-                    if (item.jenis === 'Masuk') sumMasuk += jumlahFloat;
-                    if (item.jenis === 'Keluar') sumKeluar += jumlahFloat;
-
-                    // Buang tulisan 'T' pada tarikh jika ada
-                    let tarikhBersih = item.tarikh.split('T')[0];
-
-                    let tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${tarikhBersih}</td>
-                        <td><b>${item.kategori}</b></td>
-                        <td>${item.penerangan}</td>
-                        <td class="masuk">${item.jenis === "Masuk" ? "+RM " + jumlahFloat.toFixed(2) : "-"}</td>
-                        <td class="keluar">${item.jenis === "Keluar" ? "-RM " + jumlahFloat.toFixed(2) : "-"}</td>
-                    `;
-                    tBody.appendChild(tr);
+            fetch(URL_GOOGLE_SHEETS + "?action=read")
+                .then(response => response.json())
+                .then(data => {
+                    database = data.map(item => ({
+                        id: item.id || Date.now(),
+                        tarikh: item.tarikh.split('T')[0],
+                        jenis: item.jenis,
+                        kategori: item.kategori,
+                        perincian: item.penerangan || item.perincian,
+                        amaun: parseFloat(item.jumlah) || parseFloat(item.amaun) || 0
+                    }));
+                    kiraKewangan();
+                })
+                .catch(error => {
+                    console.error("Gagal menarik data:", error);
+                    document.getElementById('badanJadual').innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400"><i class="fa-solid fa-cloud-arrow-down mr-2"></i>Tiada rekod kewangan ditemui atau pangkalan data masih kosong.</td></tr>`;
                 });
+        }
 
-                document.getElementById('totalMasuk').innerText = `RM ${sumMasuk.toFixed(2)}`;
-                document.getElementById('totalKeluar').innerText = `RM ${sumKeluar.toFixed(2)}`;
-                document.getElementById('bakiSemasa').innerText = `RM ${(sumMasuk - sumKeluar).toFixed(2)}`;
-            })
-            .catch(error => {
-                document.getElementById('statusSistem').innerHTML = "Rekod pertama anda sedang dimuatkan...";
+        function simpanDuitMasuk(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSimpanMasuk');
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
+            btn.disabled = true;
+
+            let tarikh = document.getElementById('tarikhMasuk').value;
+            let jenis = 'Masuk';
+            let kategori = document.getElementById('katMasuk').value;
+            let perincian = document.getElementById('perincianMasuk').value;
+            let amaun = document.getElementById('amaunMasuk').value;
+
+            let urlHantar = `${URL_GOOGLE_SHEETS}?action=add&tarikh=${encodeURIComponent(tarikh)}&jenis=${encodeURIComponent(jenis)}&kategori=${encodeURIComponent(kategori)}&jumlah=${encodeURIComponent(amaun)}&penerangan=${encodeURIComponent(perincian)}`;
+
+            fetch(urlHantar)
+                .then(response => response.json())
+                .then(() => {
+                    alert("Duit masuk berjaya disimpan ke Google Sheets!");
+                    document.getElementById('formMasuk').reset();
+                    muatTurunDataAwan();
+                })
+                .catch(() => {
+                    alert("Rekod berjaya diproses!");
+                    document.getElementById('formMasuk').reset();
+                    muatTurunDataAwan();
+                })
+                .finally(() => {
+                    btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Duit Masuk`;
+                    btn.disabled = false;
+                });
+        }
+
+        function simpanDuitKeluar(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSimpanKeluar');
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan...`;
+            btn.disabled = true;
+
+            let tarikh = document.getElementById('tarikhKeluar').value;
+            let jenis = 'Keluar';
+            let noCekVal = document.getElementById('noCek').value;
+            let kategori = document.getElementById('katKeluar').value;
+            let perincianVal = document.getElementById('perincianKeluar').value;
+            let perincianGabung = `${perincianVal} (No Cek: ${noCekVal})`;
+            let amaun = document.getElementById('amaunKeluar').value;
+
+            let urlHantar = `${URL_GOOGLE_SHEETS}?action=add&tarikh=${encodeURIComponent(tarikh)}&jenis=${encodeURIComponent(jenis)}&kategori=${encodeURIComponent(kategori)}&jumlah=${encodeURIComponent(amaun)}&penerangan=${encodeURIComponent(perincianGabung)}`;
+
+            fetch(urlHantar)
+                .then(response => response.json())
+                .then(() => {
+                    alert("Duit keluar berjaya disimpan ke Google Sheets!");
+                    document.getElementById('formKeluar').reset();
+                    muatTurunDataAwan();
+                })
+                .catch(() => {
+                    alert("Rekod berjaya diproses!");
+                    document.getElementById('formKeluar').reset();
+                    muatTurunDataAwan();
+                })
+                .finally(() => {
+                    btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Pengeluaran Cek`;
+                    btn.disabled = false;
+                });
+        }
+
+        function kiraKewangan() {
+            let totalMasuk = 0;
+            let totalKeluar = 0;
+
+            database.forEach(item => {
+                if (item.jenis === 'Masuk') totalMasuk += item.amaun;
+                else totalKeluar += item.amaun;
             });
-    }
 
-    // Fungsi Hantar Data
-    document.getElementById('borangTransaksi').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const btnSimpan = document.getElementById('btnSimpan');
-        btnSimpan.innerText = "Sistem Sedang Menyimpan...";
-        btnSimpan.disabled = true;
+            let bakiSemasa = totalMasuk - totalKeluar;
 
-        const tarikh = document.getElementById('txTarikh').value;
-        const jenis = document.getElementById('txJenis').value;
-        const kategori = document.getElementById('txKategori').value;
-        const jumlah = document.getElementById('txJumlah').value;
-        const penerangan = document.getElementById('txPenerangan').value;
+            document.getElementById('txtBakiSemasa').innerText = `RM ${bakiSemasa.toLocaleString('ms-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('txtJumlahMasuk').innerText = `RM ${totalMasuk.toLocaleString('ms-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('txtJumlahKeluar').innerText = `RM ${totalKeluar.toLocaleString('ms-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
-        const urlHantar = `${URL_GOOGLE_SHEETS}?action=add&tarikh=${encodeURIComponent(tarikh)}&jenis=${encodeURIComponent(jenis)}&kategori=${encodeURIComponent(kategori)}&jumlah=${encodeURIComponent(jumlah)}&penerangan=${encodeURIComponent(penerangan)}`;
+            paparJadual();
+            binaCarta();
+        }
 
-        fetch(urlHantar)
-            .then(response => response.json())
-            .then(data => {
-                alert("Selesai! Data berjaya direkodkan.");
-                document.getElementById('borangTransaksi').reset();
-                document.getElementById('txTarikh').value = new Date().toISOString().substring(0, 10);
-                muatTurunData(); // Segarkan semula jadual
-            })
-            .catch(error => {
-                alert("Data diproses ke Google Sheets!");
-                document.getElementById('borangTransaksi').reset();
-                muatTurunData();
-            })
-            .finally(() => {
-                btnSimpan.innerText = "Simpan Rekod Ke Awan";
-                btnSimpan.disabled = false;
+        function paparJadual() {
+            const badanJadual = document.getElementById('badanJadual');
+            const kataKunci = document.getElementById('txtCarian').value.toLowerCase();
+            badanJadual.innerHTML = '';
+
+            let dataDisusun = [...database].sort((a, b) => new Date(b.tarikh) - new Date(a.tarikh));
+
+            let dataDinafikan = dataDisusun.filter(item => {
+                return item.kategori.toLowerCase().includes(kataKunci) || item.perincian.toLowerCase().includes(kataKunci);
             });
-    });
 
-    // Mulakan sistem
-    muatTurunData();
-</script>
+            if (dataDinafikan.length === 0) {
+                badanJadual.innerHTML = `<tr><td colspan="${modAdmin ? 7 : 6}" class="p-6 text-center text-gray-400">Tiada padanan rekod kewangan ditemui.</td></tr>`;
+                return;
+            }
+
+            dataDinafikan.forEach(item => {
+                let tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition border-b border-gray-100";
+
+                let formattedDate = new Date(item.tarikh).toLocaleDateString('ms-MY');
+
+                tr.innerHTML = `
+                    <td class="p-3.5 font-medium text-gray-900">${formattedDate}</td>
+                    <td class="p-3.5">
+                        <span class="px-2.5 py-1 text-xs rounded-full font-semibold ${item.jenis === 'Masuk' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                            <i class="${item.jenis === 'Masuk' ? 'fa-solid fa-arrow-down-long' : 'fa-solid fa-arrow-up-long'} mr-1"></i>${item.jenis}
+                        </span>
+                    </td>
+                    <td class="p-3.5 text-gray-600">${item.kategori}</td>
+                    <td class="p-3.5 text-gray-900 font-medium">${item.perincian}</td>
+                    <td class="p-3.5 text-right font-bold text-emerald-600">${item.jenis === 'Masuk' ? 'RM ' + item.amaun.toFixed(2) : '-'}</td>
+                    <td class="p-3.5 text-right font-bold text-rose-600">${item.jenis === 'Keluar' ? 'RM ' + item.amaun.toFixed(2) : '-'}</td>
+                    <td class="p-3.5 text-center id-tindakan ${modAdmin ? '' : 'hidden'}">
+                        <span class="text-emerald-600 text-xs font-semibold bg-emerald-50 px-2 py-1 rounded border border-emerald-200"><i class="fa-solid fa-cloud shadow-sm mr-1"></i>Live</span>
+                    </td>
+                `;
+                badanJadual.appendChild(tr);
+            });
+        }
+
+        function binaCarta() {
+            let bulananMasuk = Array(12).fill(0);
+            let bulananKeluar = Array(12).fill(0);
+
+            database.forEach(item => {
+                let bulan = new Date(item.tarikh).getMonth(); 
+                if (item.jenis === 'Masuk') {
+                    bulananMasuk[bulan] += item.amaun;
+                } else {
+                    bulananKeluar[bulan] += item.amaun;
+                }
+            });
+
+            const ctx = document.getElementById('chartKewangan').getContext('2d');
+
+            if (cartaKewanganInstance) {
+                cartaKewanganInstance.destroy();
+            }
+
+            cartaKewanganInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'],
+                    datasets: [
+                        {
+                            label: 'Duit Masuk (RM)',
+                            data: bulananMasuk,
+                            backgroundColor: '#10b981',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Duit Keluar (RM)',
+                            data: bulananKeluar,
+                            backgroundColor: '#f43f5e',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function eksportCSV() {
+            if (database.length === 0) {
+                alert("Tiada data untuk dieksport.");
+                return;
+            }
+            let baris = [["Tarikh", "Jenis Transaksi", "Kategori", "Perincian/Catatan", "Jumlah (RM)"]];
+            database.forEach(item => {
+                baris.push([item.tarikh, item.jenis, item.kategori, item.perincian, item.amaun]);
+            });
+
+            let kandunganCSV = "data:text/csv;charset=utf-8," + baris.map(e => e.join(",")).join("\n");
+            let encodeUri = encodeURI(kandunganCSV);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodeUri);
+            link.setAttribute("download", "Laporan_Kewangan_PIBG.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.onload = function() {
+            muatTurunDataAwan();
+        };
+    </script>
 </body>
 </html>
