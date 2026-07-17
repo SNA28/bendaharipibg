@@ -46,7 +46,7 @@
 </head>
 <body class="antialiased text-slate-800 pb-20">
 
-    <!-- HEADER PREMIUM -->
+    <!-- -->
     <header class="gradient-navy text-white shadow-2xl sticky top-0 z-50">
         <div class="max-w-[1600px] mx-auto px-8 py-6">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -71,7 +71,7 @@
 
     <main class="max-w-[1600px] mx-auto px-8 mt-10 space-y-10">
 
-        <!-- ================= SEKSYEN 1: KEDUDUKAN BANK & DANA UTAMA ================= -->
+        <!-- -->
         <section class="grid grid-cols-1 xl:grid-cols-12 gap-8">
             
             <!-- KAD UTAMA AKAUN BANK -->
@@ -145,7 +145,7 @@
             </div>
         </section>
 
-        <!-- ================= SECTION 2: ANALISIS PERMOHONAN DANA UNIT ================= -->
+        <!-- -->
         <section>
             <div class="flex items-center justify-between mb-6 border-b border-slate-200 pb-4">
                 <div class="flex items-center gap-4">
@@ -248,7 +248,7 @@
             </div>
         </section>
 
-        <!-- ================= SECTION 3: BORANG PENTADBIR (TERSEMBUNYI SECARA LALAI) ================= -->
+        <!-- -->
         <div id="sectionBorangKewangan" class="hidden space-y-6 mt-10 bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200 border-t-8 border-t-yellow-400">
              
              <div class="flex flex-col lg:flex-row items-center justify-between border-b border-slate-100 pb-6 gap-4">
@@ -387,7 +387,7 @@
              </div>
         </div>
 
-        <!-- ================= SECTION 4: PRESTASI & SENARAI JADUAL ================= -->
+        <!-- -->
         <section class="mt-10 space-y-10">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                  <div class="glass-card rounded-[2.5rem] p-8">
@@ -507,7 +507,7 @@
                                 <span id="txtAnggaranTolakPermohonan" class="font-bold text-rose-400 text-xl">- RM 0.00</span>
                             </div>
                             
-                            <!-- TEMPAT ANGGARAN DINAMIK DIINJEK (Lalu Lintas, Coway, dan Anggaran Baru) -->
+                            <!-- TEMPAT ANGGARAN DINAMIK DIINJEK (Komitmen Bulanan Ditambah Sendiri) -->
                             <div id="senaraiAnggaranDinamik" class="space-y-4">
                                 <!-- Anggaran komitmen diletakkan di sini secara dinamik -->
                             </div>
@@ -566,7 +566,7 @@
         </div>
     </div>
 
-    <!-- INTEGRASI CLOUD DATABASE (FIREBASE FIRESTORE COMPAT) -->
+    <!-- -->
     <script>
         // Pembolehubah Global daripada Persekitaran Canvas
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'st-annes-covenant-pibg';
@@ -583,10 +583,16 @@
         let isFirebaseActive = false;
         let currentUser = null;
 
-        // Data Permulaan Tempatan Sebagai Lalai - KINI DISET KEPADA KOSONG (CLEAN SLATE)
-        const defaultDatabase = [];
+        // KUNCI SIMPANAN MEMORI BARU (Mengatasi data contoh dari sisa localStorage lama)
+        const KEY_TRANSAKSI = 'st_annes_pibg_v3_clean_transaksi';
+        const KEY_PERMOHONAN = 'st_annes_pibg_v3_clean_permohonan';
+        const KEY_MURID = 'st_annes_pibg_v3_clean_murid';
+        const KEY_ANGGARAN = 'st_annes_pibg_v3_clean_anggaran';
 
+        // Data Permulaan Tempatan Sebagai Lalai - DISET KEPADA 100% KOSONG
+        const defaultDatabase = [];
         const defaultPermohonanDatabase = [];
+        const defaultAnggaranDatabase = [];
 
         // Murid diletakkan pada kelas dengan nilai permulaan 0 murid (Sedia diisi oleh pentadbir)
         const defaultMuridDatabase = {
@@ -598,9 +604,7 @@
             "6 Daffodils": { total: 0, selesai: 0 }, "6 Camellia": { total: 0, selesai: 0 }
         };
 
-        const defaultAnggaranDatabase = [];
-
-        // Pengaktifan pembolehubah memori aktif
+        // Pengaktifan pembolehubah memori aktif (Semuanya bermula dengan kosong)
         let database = [];
         let permohonanDatabase = [];
         let muridDatabase = JSON.parse(JSON.stringify(defaultMuridDatabase));
@@ -638,6 +642,7 @@
                     modal.classList.remove('hidden'); 
                     document.getElementById('inputKunci').value = ''; 
                     document.getElementById('inputKunci').focus(); 
+                    document.getElementById('pesanRalatLaluan').classList.add('hidden');
                 }
             }
         }
@@ -685,20 +690,21 @@
             prosesKewanganAutomatik();
         }
 
-        // --- SISTEM PENYIMPANAN DATA TEMPATAN (LOCAL STORAGE) ---
+        // -->
         function functionFallbackLocal() {
             isFirebaseActive = false;
-            // Muat turun data daripada localStorage jika ada, jika tiada guna nilai kosong / sifar
-            const localDb = localStorage.getItem('st_annes_pibg_db_v2');
+            
+            // Muat turun data daripada kunci penyimpanan baharu yang dipastikan kosong
+            const localDb = localStorage.getItem(KEY_TRANSAKSI);
             database = localDb ? JSON.parse(localDb) : JSON.parse(JSON.stringify(defaultDatabase));
             
-            const localPermohonan = localStorage.getItem('st_annes_pibg_permohonan_db');
+            const localPermohonan = localStorage.getItem(KEY_PERMOHONAN);
             permohonanDatabase = localPermohonan ? JSON.parse(localPermohonan) : JSON.parse(JSON.stringify(defaultPermohonanDatabase));
             
-            const localMurid = localStorage.getItem('st_annes_pibg_murid_db');
+            const localMurid = localStorage.getItem(KEY_MURID);
             muridDatabase = localMurid ? JSON.parse(localMurid) : JSON.parse(JSON.stringify(defaultMuridDatabase));
 
-            const localAnggaran = localStorage.getItem('st_annes_pibg_anggaran_v2');
+            const localAnggaran = localStorage.getItem(KEY_ANGGARAN);
             anggaranDatabase = localAnggaran ? JSON.parse(localAnggaran) : JSON.parse(JSON.stringify(defaultAnggaranDatabase));
             
             prosesKewanganAutomatik();
@@ -707,7 +713,7 @@
         }
 
         function simpanStorage() {
-            localStorage.setItem('st_annes_pibg_db_v2', JSON.stringify(database));
+            localStorage.setItem(KEY_TRANSAKSI, JSON.stringify(database));
             prosesKewanganAutomatik();
         }
 
@@ -748,7 +754,7 @@
                 dana: document.getElementById('pembahagianKeluar').value, 
                 jenis: 'Keluar',
                 kategori: document.getElementById('katKeluar').value,
-                perincian: `${document.getElementById('perincianKeluar').value} (Cek: ${document.getElementById('noCek').value})`,
+                perincian: `${document.getElementById('perincianKeluar').value} (Cek/Baucar: ${document.getElementById('noCek').value})`,
                 amaun: parseFloat(document.getElementById('amaunKeluar').value),
                 dibuatPada: Date.now()
             };
@@ -791,7 +797,7 @@
             } else {
                 rekod.id = Date.now();
                 permohonanDatabase.push(rekod);
-                localStorage.setItem('st_annes_pibg_permohonan_db', JSON.stringify(permohonanDatabase));
+                localStorage.setItem(KEY_PERMOHONAN, JSON.stringify(permohonanDatabase));
                 prosesPermohonanAutomatik();
             }
             document.getElementById('formPermohonanDana').reset(); 
@@ -823,7 +829,7 @@
             } else {
                 rekod.id = Date.now();
                 anggaranDatabase.push(rekod);
-                localStorage.setItem('st_annes_pibg_anggaran_v2', JSON.stringify(anggaranDatabase));
+                localStorage.setItem(KEY_ANGGARAN, JSON.stringify(anggaranDatabase));
                 prosesKewanganAutomatik();
             }
             document.getElementById('formAnggaranBelanjawan').reset();
@@ -840,7 +846,7 @@
                 }
             } else {
                 anggaranDatabase = anggaranDatabase.filter(i => i.id !== localId);
-                localStorage.setItem('st_annes_pibg_anggaran_v2', JSON.stringify(anggaranDatabase));
+                localStorage.setItem(KEY_ANGGARAN, JSON.stringify(anggaranDatabase));
                 prosesKewanganAutomatik();
             }
             tunjukToast("ANGGARAN BELANJAWAN DIPADAM!");
@@ -862,7 +868,7 @@
                     tunjukToast("Gagal menyimpan bilangan murid di awan!", "ralat");
                 }
             } else {
-                localStorage.setItem('st_annes_pibg_murid_db', JSON.stringify(muridDatabase));
+                localStorage.setItem(KEY_MURID, JSON.stringify(muridDatabase));
                 paparAnalisisKutipanKelas();
                 binaCartaAliran();
             }
@@ -882,7 +888,7 @@
                 let item = permohonanDatabase.find(i => i.id === localId);
                 if (item) {
                     item.status = val;
-                    localStorage.setItem('st_annes_pibg_permohonan_db', JSON.stringify(permohonanDatabase));
+                    localStorage.setItem(KEY_PERMOHONAN, JSON.stringify(permohonanDatabase));
                     prosesPermohonanAutomatik(); 
                     prosesKewanganAutomatik();
                 }
@@ -890,7 +896,7 @@
             tunjukToast("STATUS PERMOHONAN DIKEMASKINI");
         }
 
-        // --- SISTEM PEMPROSESAN KEWANGAN VISUAL & PROJEKSI ---
+        // -->
         function prosesKewanganAutomatik() {
             let totalMasuk = 0, totalKeluar = 0;
             let pIn = 0, pOut = 0, kIn = 0, kOut = 0;
@@ -922,6 +928,7 @@
             prosesAnggaranBelanjawan(pIn - pOut);
         }
 
+        // -->
         function paparJadual() {
             const badanMasuk = document.getElementById('badanJadualMasuk');
             const badanKeluar = document.getElementById('badanJadualKeluar');
@@ -1006,6 +1013,7 @@
             paparJadualPermohonan();
         }
 
+        // -->
         function paparJadualPermohonan() {
             const badanJadual = document.getElementById('badanJadualPermohonan');
             if (!badanJadual) return;
@@ -1056,6 +1064,7 @@
             if (totalMuridEl) totalMuridEl.innerText = tm;
         }
 
+        // -->
         function prosesAnggaranBelanjawan(bakiPIBG) {
             let unDisolved = 0;
             permohonanDatabase.forEach(i => { if(i.status !== 'Selesai') unDisolved += i.amaun; });
@@ -1106,6 +1115,7 @@
             }
         }
 
+        // -->
         function binaCartaAliran() {
             let pibgBulanan = Array(12).fill(0), kelasBulanan = Array(12).fill(0);
             database.forEach(i => {
@@ -1174,7 +1184,7 @@
                             }
                         } else {
                             database = database.filter(i => i.id !== localId);
-                            localStorage.setItem('st_annes_pibg_db_v2', JSON.stringify(database));
+                            localStorage.setItem(KEY_TRANSAKSI, JSON.stringify(database));
                             prosesKewanganAutomatik();
                         }
                     } else {
@@ -1187,7 +1197,7 @@
                             }
                         } else {
                             permohonanDatabase = permohonanDatabase.filter(i => i.id !== localId);
-                            localStorage.setItem('st_annes_pibg_permohonan_db', JSON.stringify(permohonanDatabase));
+                            localStorage.setItem(KEY_PERMOHONAN, JSON.stringify(permohonanDatabase));
                             prosesPermohonanAutomatik();
                         }
                     }
@@ -1197,7 +1207,7 @@
             }
         }
 
-        // --- BUTANG KAWALAN RESET KOSONG DARI ADMIN ---
+        // -->
         async function bukaModalPengesahanReset() {
             document.getElementById('txtSahkanPadamTajuk').innerText = "SET SEMULA SISTEM (KOSONG)";
             document.getElementById('txtSahkanPadamKeterangan').innerText = "Adakah anda pasti mahu memadam semua data dan mengeset semula sistem ini ke baki sifar (RM 0.00)?";
@@ -1233,10 +1243,11 @@
                             
                             tunjukToast("DATA AWAN BERJAYA DISIFARKAN!");
                         } else {
-                            localStorage.setItem('st_annes_pibg_db_v2', JSON.stringify([]));
-                            localStorage.setItem('st_annes_pibg_permohonan_db', JSON.stringify([]));
-                            localStorage.setItem('st_annes_pibg_murid_db', JSON.stringify(defaultMuridDatabase));
-                            localStorage.setItem('st_annes_pibg_anggaran_v2', JSON.stringify([]));
+                            // Kosongkan storan tempatan menggunakan kunci baharu
+                            localStorage.setItem(KEY_TRANSAKSI, JSON.stringify([]));
+                            localStorage.setItem(KEY_PERMOHONAN, JSON.stringify([]));
+                            localStorage.setItem(KEY_MURID, JSON.stringify(defaultMuridDatabase));
+                            localStorage.setItem(KEY_ANGGARAN, JSON.stringify([]));
                             functionFallbackLocal();
                             tunjukToast("DATA TEMPATAN DISIFARKAN!");
                         }
@@ -1268,7 +1279,6 @@
                 tunjukToast("Sedang menyinkronkan data...", "info");
                 let parsedCount = 0;
                 
-                // Format: Tarikh, Dana, Jenis Transaksi, Kelas, Kategori, Perincian, Amaun
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if (!line) continue;
@@ -1332,7 +1342,7 @@
             let link = document.createElement("a"); link.setAttribute("href", encodeURI(csv)); link.setAttribute("download", "Laporan_Permohonan_ST_ANNES.csv"); link.click();
         }
 
-        // Pendedahan Fungsi Global ke Object Window tambahan untuk menjamin pautan HTML
+        // Pendedahan Fungsi Global ke Object Window
         window.tutupModalLaluan = tutupModalLaluan;
         window.sahkanKataLaluan = sahkanKataLaluan;
         window.padamAnggaran = padamAnggaran;
@@ -1345,7 +1355,7 @@
         window.paparJadualPermohonan = paparJadualPermohonan;
         window.tukarStatus = tukarStatus;
 
-        // --- MEKANISME SINKRONISASI BINDING EVENT LISTENERS SECARA TERBINA ---
+        // --- BINDING EVENT LISTENERS ---
         const initBorangEvents = () => {
             const fDuitMasuk = document.getElementById('formDuitMasuk');
             if (fDuitMasuk) fDuitMasuk.addEventListener('submit', simpanDuitMasuk);
@@ -1366,12 +1376,16 @@
             if (bImporCSV) bImporCSV.addEventListener('click', imporDariCSV);
         };
 
-        // Sandaran Pelan Laluan Lokal
+        // Mulakan storan tempatan yang bersih
         if (!firebaseConfig) {
+            // Pembersihan paksa sisa memori kunci lama jika masih ada untuk mengelakkan ralat paparan
+            localStorage.removeItem('st_annes_pibg_db_v2');
+            localStorage.removeItem('st_annes_pibg_permohonan_db');
+            localStorage.removeItem('st_annes_pibg_anggaran_v2');
+            
             functionFallbackLocal();
         }
 
-        // --- PEMULAAN SELAMAT BAGI PREVIEW IFRAME ---
         function mulakanSistemPenuh() {
             initBorangEvents();
             if (!isFirebaseActive) {
