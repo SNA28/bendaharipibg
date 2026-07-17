@@ -254,12 +254,12 @@
              <div class="flex flex-col lg:flex-row items-center justify-between border-b border-slate-100 pb-6 gap-4">
                  <div class="flex items-center gap-4">
                      <div class="bg-yellow-100 p-2.5 rounded-xl text-yellow-600"><i class="fa-solid fa-user-shield text-lg"></i></div>
-                     <h3 class="text-xl font-bold uppercase text-slate-800">Ruangan Pentadbir (Key-In Data)</h3>
+                     <h3 class="text-xl font-bold uppercase text-slate-800">Ruangan Pentadbir (Key-In Data Baru)</h3>
                  </div>
                  <!-- BUTANG RESET DAN IMPORT CSV -->
                  <div class="flex flex-wrap gap-3">
                      <button onclick="bukaModalPengesahanReset()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-5 py-3 rounded-xl flex items-center gap-2 cursor-pointer transition-colors shadow">
-                         <i class="fa-solid fa-arrows-rotate"></i> FORMAT & RESET DATA
+                         <i class="fa-solid fa-arrows-rotate"></i> FORMAT & SET SEMULA (KOSONG)
                      </button>
                  </div>
               </div>
@@ -336,8 +336,8 @@
                             <option value="6 Daffodils">6 Daffodils</option> <option value="6 Camellia">6 Camellia</option>
                         </select>
                     </div>
-                    <input type="number" id="jumlahMuridInput" placeholder="Jumlah Murid" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
-                    <input type="number" id="selesaiBayarInput" placeholder="Selesai Bayar" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="number" id="jumlahMuridInput" placeholder="Jumlah Murid Kelas" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="number" id="selesaiBayarInput" placeholder="Selesai Bayar (Bil. Murid)" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
                     <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow transition-colors text-base">KEMASKINI DATA</button>
                 </form>
              </div>
@@ -492,7 +492,7 @@
                         <div class="bg-yellow-400 p-3.5 rounded-2xl text-slate-950"><i class="fa-solid fa-calculator text-2xl"></i></div>
                         <div>
                             <h3 class="text-2xl md:text-3xl font-bold uppercase text-yellow-400 tracking-tight">Anggaran Belanjawan Dana Am PIBG</h3>
-                            <p class="text-slate-400 text-sm uppercase tracking-wider font-bold mt-1">Unjuran Baki Komitmen Aliran Tunai (Julai - Disember)</p>
+                            <p class="text-slate-400 text-sm uppercase tracking-wider font-bold mt-1">Unjuran Baki Komitmen Aliran Tunai</p>
                         </div>
                     </div>
                     
@@ -583,48 +583,28 @@
         let isFirebaseActive = false;
         let currentUser = null;
 
-        // Data Permulaan Tempatan Sebagai Lalai
-        const defaultDatabase = [
-            { id: 1, tarikh: "2026-01-15", dana: "PIBG", jenis: "Masuk", kategori: "Sumbangan Ibu Bapa", perincian: "Kutipan Sumbangan PIBG Fasa 1", amaun: 24500.00 },
-            { id: 2, tarikh: "2026-02-10", dana: "PIBG", jenis: "Masuk", kategori: "Sumbangan Luar", perincian: "Sumbangan Korporat Syarikat Al-Ikhsan", amaun: 5000.00 },
-            { id: 3, tarikh: "2026-02-20", dana: "PIBG", jenis: "Keluar", kategori: "Infrastruktur", perincian: "Membaiki Bumbung Dewan Sekolah (Cek: 489201)", amaun: 3500.00 },
-            { id: 4, tarikh: "2026-03-05", dana: "Kelas Tambahan", jenis: "Masuk", kategori: "Yuran Kelas Tambahan", perincian: "Kutipan Yuran Kelas Tambahan Mac", amaun: 12400.00 },
-            { id: 5, tarikh: "2026-03-12", dana: "Kelas Tambahan", jenis: "Keluar", kategori: "Saguhati", perincian: "Elaun Guru Kelas Tambahan Fasa 1 (Cek: 489202)", amaun: 4200.00 },
-            { id: 6, tarikh: "2026-04-02", dana: "PIBG", jenis: "Keluar", kategori: "Kebajikan", perincian: "Sumbangan Kebajikan Anak Yatim & Miskin (Cek: 489203)", amaun: 1500.00 },
-            { id: 7, tarikh: "2026-04-18", dana: "PIBG", jenis: "Masuk", kategori: "Hasil Jualan", perincian: "Keuntungan Hari Kantin & Keusahawanan", amaun: 3850.00 },
-            { id: 8, tarikh: "2026-05-10", dana: "Kelas Tambahan", jenis: "Masuk", kategori: "Yuran Kelas Tambahan", perincian: "Kutipan Yuran Kelas Tambahan Mei", amaun: 11150.00 },
-            { id: 9, tarikh: "2026-05-25", dana: "PIBG", jenis: "Keluar", kategori: "Sekolah", perincian: "Sponsor Hadiah Kejohanan Sukan Tahunan (Cek: 489204)", amaun: 2800.00 },
-            { id: 10, tarikh: "2026-06-05", dana: "Kelas Tambahan", jenis: "Keluar", kategori: "Saguhati", perincian: "Bayaran Buku Modul & Cetakan Latihan (Cek: 489205)", amaun: 3100.00 }
-        ];
+        // Data Permulaan Tempatan Sebagai Lalai - KINI DISET KEPADA KOSONG (CLEAN SLATE)
+        const defaultDatabase = [];
 
-        const defaultPermohonanDatabase = [
-            { id: 101, tarikh: "2026-03-01", unit: "Kurikulum", projek: "Klinik Kecemerlangan UPSR & Bengkel Teknik Menjawab", pemohon: "Puan Noraini Ahmad", amaun: 1500.00, status: "Selesai" },
-            { id: 102, tarikh: "2026-03-15", unit: "Kokurikulum", projek: "Sukan Tara & Kejohanan Balapan Sekolah 2026", pemohon: "Encik Khairul Azhar", amaun: 3000.00, status: "Selesai" },
-            { id: 103, tarikh: "2026-04-10", unit: "HEM", projek: "Program Watikah Pelantikan Pemimpin Muda", pemohon: "Cik Siti Aminah", amaun: 850.00, status: "Selesai" },
-            { id: 104, tarikh: "2026-05-02", unit: "Kurikulum", projek: "Pembelian Set Kamus Dewan & Kamus Bergambar Pusat Sumber", pemohon: "Puan Zanariah", amaun: 1200.00, status: "Belum" },
-            { id: 105, tarikh: "2026-05-20", unit: "Kokurikulum", projek: "Yuran Penyertaan & Pengangkutan Pertandingan Kawad Kaki", pemohon: "Encik Faisal", amaun: 1800.00, status: "Pinda" },
-            { id: 106, tarikh: "2026-06-12", unit: "HEM", projek: "Naiktaraf Laluan Berbumbung & Mural Blok Kebajikan", pemohon: "Puan Rohana", amaun: 2500.00, status: "Belum" }
-        ];
+        const defaultPermohonanDatabase = [];
 
+        // Murid diletakkan pada kelas dengan nilai permulaan 0 murid (Sedia diisi oleh pentadbir)
         const defaultMuridDatabase = {
-            "1 Daffodils": { total: 36, selesai: 28 }, "1 Camellia": { total: 28, selesai: 20 },
-            "2 Daffodils": { total: 32, selesai: 30 }, "2 Camellia": { total: 30, selesai: 25 },
-            "3 Daffodils": { total: 29, selesai: 29 }, "3 Camellia": { total: 31, selesai: 22 },
-            "4 Daffodils": { total: 35, selesai: 30 }, "4 Camellia": { total: 33, selesai: 24 },
-            "5 Daffodils": { total: 28, selesai: 28 }, "5 Camellia": { total: 27, selesai: 20 },
-            "6 Daffodils": { total: 30, selesai: 30 }, "6 Camellia": { total: 29, selesai: 26 }
+            "1 Daffodils": { total: 0, selesai: 0 }, "1 Camellia": { total: 0, selesai: 0 },
+            "2 Daffodils": { total: 0, selesai: 0 }, "2 Camellia": { total: 0, selesai: 0 },
+            "3 Daffodils": { total: 0, selesai: 0 }, "3 Camellia": { total: 0, selesai: 0 },
+            "4 Daffodils": { total: 0, selesai: 0 }, "4 Camellia": { total: 0, selesai: 0 },
+            "5 Daffodils": { total: 0, selesai: 0 }, "5 Camellia": { total: 0, selesai: 0 },
+            "6 Daffodils": { total: 0, selesai: 0 }, "6 Camellia": { total: 0, selesai: 0 }
         };
 
-        const defaultAnggaranDatabase = [
-            { id: 11, nama: 'Unjuran Bayaran Pengawal Lalu Lintas', kadar: 900.00, bulan: 6, jumlah: 5400.00 },
-            { id: 12, nama: 'Unjuran Bayaran Penapis Air Coway', kadar: 123.00, bulan: 6, jumlah: 738.00 }
-        ];
+        const defaultAnggaranDatabase = [];
 
         // Pengaktifan pembolehubah memori aktif
-        let database = JSON.parse(JSON.stringify(defaultDatabase));
-        let permohonanDatabase = JSON.parse(JSON.stringify(defaultPermohonanDatabase));
+        let database = [];
+        let permohonanDatabase = [];
         let muridDatabase = JSON.parse(JSON.stringify(defaultMuridDatabase));
-        let anggaranDatabase = JSON.parse(JSON.stringify(defaultAnggaranDatabase));
+        let anggaranDatabase = [];
 
         let modAdmin = false;
         let idRekodMahuDipadam = null;
@@ -651,7 +631,7 @@
             if (modAdmin) { 
                 modAdmin = false; 
                 kemaskiniStatusMod(); 
-                tunjukToast("MOD AJK DIAKTIFKAN", "info"); 
+                tunjukToast("MOD PENDENGAR DIAKTIFKAN", "info"); 
             } else { 
                 const modal = document.getElementById('modalKataLaluan');
                 if (modal) {
@@ -708,18 +688,18 @@
         // --- SISTEM PENYIMPANAN DATA TEMPATAN (LOCAL STORAGE) ---
         function functionFallbackLocal() {
             isFirebaseActive = false;
-            // Muat turun data daripada localStorage jika ada, jika tiada guna nilai asal/default
+            // Muat turun data daripada localStorage jika ada, jika tiada guna nilai kosong / sifar
             const localDb = localStorage.getItem('st_annes_pibg_db_v2');
-            if (localDb) database = JSON.parse(localDb);
+            database = localDb ? JSON.parse(localDb) : JSON.parse(JSON.stringify(defaultDatabase));
             
             const localPermohonan = localStorage.getItem('st_annes_pibg_permohonan_db');
-            if (localPermohonan) permohonanDatabase = JSON.parse(localPermohonan);
+            permohonanDatabase = localPermohonan ? JSON.parse(localPermohonan) : JSON.parse(JSON.stringify(defaultPermohonanDatabase));
             
             const localMurid = localStorage.getItem('st_annes_pibg_murid_db');
-            if (localMurid) muridDatabase = JSON.parse(localMurid);
+            muridDatabase = localMurid ? JSON.parse(localMurid) : JSON.parse(JSON.stringify(defaultMuridDatabase));
 
             const localAnggaran = localStorage.getItem('st_annes_pibg_anggaran_v2');
-            if (localAnggaran) anggaranDatabase = JSON.parse(localAnggaran);
+            anggaranDatabase = localAnggaran ? JSON.parse(localAnggaran) : JSON.parse(JSON.stringify(defaultAnggaranDatabase));
             
             prosesKewanganAutomatik();
             prosesPermohonanAutomatik();
@@ -953,6 +933,16 @@
             
             let list = database.filter(i => fDana === 'SEMUA' || i.dana === fDana).sort((a,b)=>new Date(a.tarikh)-new Date(b.tarikh));
             
+            // Papar rekod kosong jika tiada data
+            if (list.length === 0) {
+                badanMasuk.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium">Tiada rekod penerimaan ditemui.</td></tr>`;
+                badanKeluar.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium">Tiada rekod pembayaran ditemui.</td></tr>`;
+                return;
+            }
+
+            let entriesMasuk = 0;
+            let entriesKeluar = 0;
+
             list.forEach(i => {
                 let badge = `<span class="px-2 py-0.5 rounded text-xs font-bold uppercase ${i.dana==='PIBG'?'bg-blue-100 text-blue-700':'bg-rose-100 text-rose-700'}">${i.dana}</span>`;
                 let tr = document.createElement('tr');
@@ -964,11 +954,20 @@
                 if (i.jenis === 'Masuk') {
                     tr.innerHTML = `<td class="p-4 text-slate-500 whitespace-nowrap">${i.tarikh}</td><td class="p-4"><div>${badge}</div><span class="font-bold text-slate-900">${i.perincian}</span></td><td class="p-4 text-right font-bold text-emerald-600">RM ${i.amaun.toFixed(2)}</td>${tindakanBtn}`;
                     badanMasuk.appendChild(tr);
+                    entriesMasuk++;
                 } else {
                     tr.innerHTML = `<td class="p-4 text-slate-500 whitespace-nowrap">${i.tarikh}</td><td class="p-4"><div>${badge}</div><span class="font-bold text-slate-900">${i.perincian}</span></td><td class="p-4 text-right font-bold text-rose-600">RM ${i.amaun.toFixed(2)}</td>${tindakanBtn}`;
                     badanKeluar.appendChild(tr);
+                    entriesKeluar++;
                 }
             });
+
+            if (entriesMasuk === 0) {
+                badanMasuk.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium">Tiada rekod penerimaan untuk penapis ini.</td></tr>`;
+            }
+            if (entriesKeluar === 0) {
+                badanKeluar.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium">Tiada rekod pembayaran untuk penapis ini.</td></tr>`;
+            }
         }
 
         function prosesPermohonanAutomatik() {
@@ -1016,6 +1015,11 @@
             
             let filtered = permohonanDatabase.filter(i => (fUnit==='SEMUA' || i.unit===fUnit) && (fStat==='SEMUA' || i.status===fStat));
             
+            if (filtered.length === 0) {
+                badanJadual.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium">Tiada permohonan dana unit setakat ini.</td></tr>`;
+                return;
+            }
+
             filtered.forEach(i => {
                 let tr = document.createElement('tr');
                 tr.className = "text-base hover:bg-slate-50";
@@ -1060,23 +1064,28 @@
             const container = document.getElementById('senaraiAnggaranDinamik');
             if (container) {
                 container.innerHTML = '';
-                anggaranDatabase.forEach(item => {
-                    totalTolakAnggaran += item.jumlah;
-                    const div = document.createElement('div');
-                    div.className = "flex justify-between border-b border-slate-800 pb-2 text-base md:text-lg";
-                    
-                    let deleteBtn = '';
-                    let idUnik = item.idCloud || item.id;
-                    if (modAdmin) {
-                        deleteBtn = `<button onclick="padamAnggaran('${idUnik}', ${item.id || null})" class="text-rose-400 hover:text-rose-600 bg-rose-50/10 p-1.5 rounded ml-2 cursor-pointer"><i class="fa-solid fa-trash-can text-sm"></i></button>`;
-                    }
+                
+                if (anggaranDatabase.length === 0) {
+                    container.innerHTML = `<p class="text-slate-500 text-sm italic">Tiada komitmen bulanan didaftarkan setakat ini.</p>`;
+                } else {
+                    anggaranDatabase.forEach(item => {
+                        totalTolakAnggaran += item.jumlah;
+                        const div = document.createElement('div');
+                        div.className = "flex justify-between border-b border-slate-800 pb-2 text-base md:text-lg";
+                        
+                        let deleteBtn = '';
+                        let idUnik = item.idCloud || item.id;
+                        if (modAdmin) {
+                            deleteBtn = `<button onclick="padamAnggaran('${idUnik}', ${item.id || null})" class="text-rose-400 hover:text-rose-600 bg-rose-50/10 p-1.5 rounded ml-2 cursor-pointer"><i class="fa-solid fa-trash-can text-sm"></i></button>`;
+                        }
 
-                    div.innerHTML = `
-                        <span class="text-slate-400">${item.nama} <span class="text-xs text-slate-500 font-bold block md:inline md:ml-2">(RM ${item.kadar.toFixed(2)} × ${item.bulan} Bulan)</span></span>
-                        <span class="font-bold text-rose-400">- RM ${item.jumlah.toLocaleString('en-MY', {minimumFractionDigits: 2})} ${deleteBtn}</span>
-                    `;
-                    container.appendChild(div);
-                });
+                        div.innerHTML = `
+                            <span class="text-slate-400">${item.nama} <span class="text-xs text-slate-500 font-bold block md:inline md:ml-2">(RM ${item.kadar.toFixed(2)} × ${item.bulan} Bulan)</span></span>
+                            <span class="font-bold text-rose-400">- RM ${item.jumlah.toLocaleString('en-MY', {minimumFractionDigits: 2})} ${deleteBtn}</span>
+                        `;
+                        container.appendChild(div);
+                    });
+                }
             }
 
             let bakiAkhir = bakiPIBG - unDisolved - totalTolakAnggaran;
@@ -1188,10 +1197,10 @@
             }
         }
 
-        // --- BUTANG KAWALAN RESET EMERGENSI DARI ADMIN ---
+        // --- BUTANG KAWALAN RESET KOSONG DARI ADMIN ---
         async function bukaModalPengesahanReset() {
-            document.getElementById('txtSahkanPadamTajuk').innerText = "PENGESAHAN FORMAT SEMULA";
-            document.getElementById('txtSahkanPadamKeterangan').innerText = "Adakah anda pasti mahu memadam semua data awan sekarang dan menggantikannya dengan 10 Rekod Buku Tunai asal anda?";
+            document.getElementById('txtSahkanPadamTajuk').innerText = "SET SEMULA SISTEM (KOSONG)";
+            document.getElementById('txtSahkanPadamKeterangan').innerText = "Adakah anda pasti mahu memadam semua data dan mengeset semula sistem ini ke baki sifar (RM 0.00)?";
             
             const modal = document.getElementById('modalPengesahan');
             if (modal) modal.classList.remove('hidden');
@@ -1200,7 +1209,7 @@
             if (btnSahkan) {
                 btnSahkan.onclick = async function() {
                     tutupModalPengesahan();
-                    tunjukToast("SEDANG MEMADAM DATA AWAN...", "info");
+                    tunjukToast("SEDANG MEMADAM DATA...", "info");
                     
                     try {
                         if (isFirebaseActive && currentUser) {
@@ -1222,24 +1231,14 @@
                             const docRefMurid = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('murid_kelas').doc('data_murid');
                             await docRefMurid.set(defaultMuridDatabase);
                             
-                            for (const item of defaultDatabase) {
-                                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('transaksi').add(item);
-                            }
-                            for (const item of defaultPermohonanDatabase) {
-                                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('permohonan').add(item);
-                            }
-                            for (const item of defaultAnggaranDatabase) {
-                                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('anggaran').add(item);
-                            }
-                            
-                            tunjukToast("DATA AWAN BERJAYA DIPULIHKAN!");
+                            tunjukToast("DATA AWAN BERJAYA DISIFARKAN!");
                         } else {
-                            localStorage.setItem('st_annes_pibg_db_v2', JSON.stringify(defaultDatabase));
-                            localStorage.setItem('st_annes_pibg_permohonan_db', JSON.stringify(defaultPermohonanDatabase));
+                            localStorage.setItem('st_annes_pibg_db_v2', JSON.stringify([]));
+                            localStorage.setItem('st_annes_pibg_permohonan_db', JSON.stringify([]));
                             localStorage.setItem('st_annes_pibg_murid_db', JSON.stringify(defaultMuridDatabase));
-                            localStorage.setItem('st_annes_pibg_anggaran_v2', JSON.stringify(defaultAnggaranDatabase));
+                            localStorage.setItem('st_annes_pibg_anggaran_v2', JSON.stringify([]));
                             functionFallbackLocal();
-                            tunjukToast("DATA LOKAL BERJAYA DIPULIHKAN!");
+                            tunjukToast("DATA TEMPATAN DISIFARKAN!");
                         }
                     } catch (err) {
                         console.error("Format ralat:", err);
