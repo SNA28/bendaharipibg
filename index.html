@@ -1440,5 +1440,53 @@
     muatTurunDataLive();
   });
 </script>
+    <!-- KOD AUTO-SYNC UNTUK AJK BUKA DIRECT KELUAR DATA -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+  // Pangkalan data awan awam percuma
+  const firebaseConfig = {
+    databaseURL: "https://pibg-stannes-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  };
+  
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  const dbLive = firebase.database();
+
+  // 1. Apabila AJK buka link di HP, auto muat turun data dari awan
+  dbLive.ref('data_yuran_2026').on('value', (snapshot) => {
+    const dataAwan = snapshot.val();
+    if (dataAwan) {
+      // Simpan ke storage peranti
+      const currentData = localStorage.getItem('DATA_YURAN') || localStorage.getItem('yuranData') || '';
+      if (JSON.stringify(dataAwan) !== currentData) {
+        // Cari key tempatan asal web anda dan kemaskini
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          localStorage.setItem(k, JSON.stringify(dataAwan));
+        }
+        // Muat semula halaman supaya data baru terpapar
+        if (!sessionStorage.getItem('synced')) {
+          sessionStorage.setItem('synced', 'true');
+          location.reload();
+        }
+      }
+    }
+  });
+
+  // 2. Apabila Anda (Bendahari) kunci masuk data, auto hantar ke awan
+  const asalSetItem = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    asalSetItem.apply(this, arguments);
+    try {
+      const parsed = JSON.parse(value);
+      if (typeof parsed === 'object' && parsed !== null) {
+        dbLive.ref('data_yuran_2026').set(parsed);
+      }
+    } catch(e) {}
+  };
+</script>
 </body>
 </html>
