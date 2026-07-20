@@ -1404,81 +1404,25 @@
     </script>
     <script>
   // Gantikan link di bawah dengan Web App URL dari Google Apps Script anda
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/PASTE_WEB_APP_URL_DI_SINI/exec";
-
-  // 1. FUNGSI AMBIL DATA AUTOMATIK (Bila AJK Buka Link di HP)
-  function muatTurunDataLive() {
-    fetch(GOOGLE_SCRIPT_URL)
-      .then(response => response.json())
-      .then(data => {
-        if (data && Object.keys(data).length > 0) {
-          // Kemaskini memori tempatan browser
-          localStorage.setItem('DATA_YURAN_2026', JSON.stringify(data));
-          // Muat semula paparan atau jalankan fungsi render asal web
-          if (typeof renderData === 'function') renderData();
-          else location.reload();
-        }
-      })
-      .catch(error => console.error("Gagal muat turun data:", error));
-  }
-
-  // 2. FUNGSI SIMPAN DATA (Bila Bendahari Tambah/Kemaskini Data)
-  function simpanDataKeLive(dataYuran) {
-    fetch(GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify(dataYuran)
-    })
-    .then(response => response.json())
-    .then(result => {
-      console.log("Data berjaya disimpan ke Google Sheet!");
-    })
-    .catch(error => console.error("Gagal simpan data:", error));
-  }
-
-  // Ambil data automatik sebaik sahaja halaman web selesai dimuatkan
-  window.addEventListener('DOMContentLoaded', () => {
-    muatTurunDataLive();
-  });
-</script>
-<!-- KOD KHAS LIVE AUTOMATIK UNTUK AJK -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <!-- 1. Panggil Perpustakaan Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
-  // Sambungan terus ke Database Awan Khas
-  if (!firebase.apps.length) {
-    firebase.initializeApp({
-      databaseURL: "https://pibg-stannes-default-rtdb.asia-southeast1.firebasedatabase.app/"
-    });
-  }
-  const dbAwan = firebase.database().ref('YURAN_ST_ANNES_2026');
-
-  // 1. BILA AJK BUKA LINK DI HP: Auto tarik data dari awan terus ke skrin HP diorang
-  dbAwan.on('value', (snapshot) => {
-    const dataTerbaru = snapshot.val();
-    if (dataTerbaru) {
-      const dataTempatan = localStorage.getItem('YURAN_ST_ANNES_2026');
-      if (JSON.stringify(dataTerbaru) !== dataTempatan) {
-        localStorage.setItem('YURAN_ST_ANNES_2026', JSON.stringify(dataTerbaru));
-        // Refresh automatik sekali sahaja supaya data terus terpapar di HP AJK
-        if (!sessionStorage.getItem('sudah_load')) {
-          sessionStorage.setItem('sudah_load', 'true');
-          location.reload();
-        }
-      }
-    }
-  });
-
-  // 2. BILA ANDA (BENDAHARI) MASUK/UBAH DATA: Auto hantar data naik ke awan
-  const simpanAsal = localStorage.setItem;
-  localStorage.setItem = function(key, value) {
-    simpanAsal.apply(this, arguments);
-    if (key === 'YURAN_ST_ANNES_2026') {
-      try {
-        dbAwan.set(JSON.parse(value));
-      } catch(e) {}
-    }
+  // 2. Kunci Keselamatan & Alamat Firebase Anda
+  // (Dapatkan maklumat ini daripada Firebase Console > Project Settings)
+  const firebaseConfig = {
+    apiKey: "SALIN_DARI_FIREBASE",
+    authDomain: "SALIN_DARI_FIREBASE",
+    projectId: "SALIN_DARI_FIREBASE",
+    storageBucket: "SALIN_DARI_FIREBASE",
+    messagingSenderId: "SALIN_DARI_FIREBASE",
+    appId: "SALIN_DARI_FIREBASE"
   };
-</script>   
+
+  // 3. Hidupkan Sambungan Firestore
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
 </body>
 </html>
