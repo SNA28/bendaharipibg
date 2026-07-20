@@ -8,8 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- SDK Firebase Compat (UMD) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -52,7 +50,7 @@
                         Pengurusan Kewangan PIBG
                     </h1>
                     <p class="text-lg md:text-xl font-medium text-blue-200 uppercase tracking-widest mt-1">
-                        SK St. Anne's Convent <span class="ml-2 bg-emerald-500/20 text-emerald-400 text-xs font-extrabold px-2.5 py-1 rounded-full uppercase tracking-normal border border-emerald-400/30"><i class="fa-solid fa-cloud mr-1"></i> Awan Aktif (Real-Time Live)</span>
+                        SK St. Anne's Convent <span class="ml-2 bg-emerald-500/20 text-emerald-400 text-xs font-extrabold px-2.5 py-1 rounded-full uppercase tracking-normal border border-emerald-400/30"><i class="fa-solid fa-cloud mr-1"></i> Firebase Live</span>
                     </p>
                 </div>
                 
@@ -141,11 +139,6 @@
                 <div class="flex items-center gap-4">
                     <div class="bg-yellow-100 p-2.5 rounded-xl text-yellow-600"><i class="fa-solid fa-user-shield text-lg"></i></div>
                     <h3 class="text-xl font-bold uppercase text-slate-800">Ruangan Pentadbir (Key-In Data Real-Time)</h3>
-                </div>
-                <div class="flex flex-wrap gap-3">
-                    <button onclick="padamSemuaData()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-5 py-3 rounded-xl flex items-center gap-2 cursor-pointer transition-colors shadow">
-                        <i class="fa-solid fa-trash"></i> KOSONGKAN DATA FIRESTORE
-                    </button>
                 </div>
             </div>
 
@@ -260,20 +253,17 @@
         </section>
     </main>
 
-    <!-- KOD SCRIPT FIRESTORE REAL-TIME -->
     <script>
-        // 1. KONFIGURASI FIREBASE FIRESTORE
-        // Sila salin & gantikan nilai di bawah dari Firebase Console > Project Settings jika berbeza
+        // FIREBASE CONFIG KEPUNYAAN ANDA
         const firebaseConfig = {
-            apiKey: "AIzaSy_YOUR_API_KEY",
+            apiKey: "AIzaSyD1qUSD8bJU7QAaQYfs6zngKQfSC5XI59Q",
             authDomain: "bendahari-pibg.firebaseapp.com",
             projectId: "bendahari-pibg",
-            storageBucket: "bendahari-pibg.appspot.com",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:abcdef123456"
+            storageBucket: "bendahari-pibg.firebasestorage.app",
+            messagingSenderId: "780920877564",
+            appId: "1:780920877564:web:f3cf19f4158d8aea5e4279"
         };
 
-        // Inisialisasi Firebase & Firestore
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -282,7 +272,6 @@
         let senaraiTransaksi = [];
         let isAdmin = false;
 
-        // 2. MOD ADMIN TOGGLE
         function bukaModalLaluan() {
             if (isAdmin) {
                 isAdmin = false;
@@ -290,7 +279,7 @@
                 alert("Anda telah keluar dari Mod Admin.");
             } else {
                 let laluan = prompt("Masukkan Kata Laluan Admin:");
-                if (laluan === "admin123") { // Ganti kata laluan mengikut cita rasa anda
+                if (laluan === "admin123") {
                     isAdmin = true;
                     kemaskiniModAdminUI();
                     alert("Berjaya masuk Mod Admin!");
@@ -319,7 +308,6 @@
             paparJadual();
         }
 
-        // 3. TAMBAH TRANSAKSI KE FIRESTORE
         function tambahTransaksi(e, jenis) {
             e.preventDefault();
             
@@ -351,25 +339,23 @@
                 created_at: firebase.firestore.FieldValue.serverTimestamp()
             })
             .then(() => {
-                alert("Rekod berjaya disimpan secara Real-Time!");
+                alert("Rekod berjaya disimpan!");
                 if(jenis === "MASUK") document.getElementById("formDuitMasuk").reset();
                 else document.getElementById("formDuitKeluar").reset();
             })
             .catch((error) => {
-                alert("Gagal menyimpan data: " + error.message);
+                alert("Gagal menyimpan: " + error.message);
             });
         }
 
-        // 4. PADAM TRANSAKSI DARI FIRESTORE
         function padamTransaksi(id) {
             if (confirm("Adakah anda yakin untuk memadam rekod ini?")) {
                 db.collection("transaksi").doc(id).delete()
-                .then(() => alert("Rekod dipadam!"))
+                .then(() => alert("Rekod berjaya dipadam!"))
                 .catch(err => alert("Gagal padam: " + err.message));
             }
         }
 
-        // 5. BACA DATA REAL-TIME DARI FIRESTORE (onSnapshot)
         function mulaDengarDataRealtime() {
             db.collection("transaksi").orderBy("tarikh", "desc")
             .onSnapshot((snapshot) => {
@@ -380,11 +366,10 @@
                 kirimBakiKewangan();
                 paparJadual();
             }, (error) => {
-                console.error("Ralat membaca Firestore: ", error);
+                console.error("Error reading Firebase: ", error);
             });
         }
 
-        // 6. KIRA KESELURUHAN BAKI
         function kirimBakiKewangan() {
             let totalMasuk = 0, totalKeluar = 0;
             let pibgM = 0, pibgK = 0;
@@ -403,23 +388,19 @@
                 }
             });
 
-            // Update UI Bank Semasa
             document.getElementById("txtTotalMasukBank").innerText = "RM " + totalMasuk.toFixed(2);
             document.getElementById("txtTotalKeluarBank").innerText = "RM " + totalKeluar.toFixed(2);
             document.getElementById("txtBakiBank").innerText = "RM " + (totalMasuk - totalKeluar).toFixed(2);
 
-            // Update UI Dana PIBG
             document.getElementById("pibgMasuk").innerText = "RM " + pibgM.toFixed(2);
             document.getElementById("pibgKeluar").innerText = "RM " + pibgK.toFixed(2);
             document.getElementById("pibgBaki").innerText = "RM " + (pibgM - pibgK).toFixed(2);
 
-            // Update UI Dana Kelas
             document.getElementById("kelasMasuk").innerText = "RM " + kelasM.toFixed(2);
             document.getElementById("kelasKeluar").innerText = "RM " + kelasK.toFixed(2);
             document.getElementById("kelasBaki").innerText = "RM " + (kelasM - kelasK).toFixed(2);
         }
 
-        // 7. PAPAR DATA DALAM JADUAL JADUAL
         function paparJadual() {
             const filter = document.getElementById("filterDana").value;
             const tblMasuk = document.getElementById("tblMasuk");
@@ -448,9 +429,7 @@
             });
         }
 
-        // Mula secara automatik bila dibuka
         window.onload = function() {
-            // Set tarikh automatik ke tarikh hari ini
             const today = new Date().toISOString().split('T')[0];
             if(document.getElementById("tarikhMasuk")) document.getElementById("tarikhMasuk").value = today;
             if(document.getElementById("tarikhKeluar")) document.getElementById("tarikhKeluar").value = today;
