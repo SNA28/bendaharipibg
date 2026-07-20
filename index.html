@@ -1402,5 +1402,43 @@
         }
 
     </script>
+    <script>
+  // Gantikan link di bawah dengan Web App URL dari Google Apps Script anda
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/PASTE_WEB_APP_URL_DI_SINI/exec";
+
+  // 1. FUNGSI AMBIL DATA AUTOMATIK (Bila AJK Buka Link di HP)
+  function muatTurunDataLive() {
+    fetch(GOOGLE_SCRIPT_URL)
+      .then(response => response.json())
+      .then(data => {
+        if (data && Object.keys(data).length > 0) {
+          // Kemaskini memori tempatan browser
+          localStorage.setItem('DATA_YURAN_2026', JSON.stringify(data));
+          // Muat semula paparan atau jalankan fungsi render asal web
+          if (typeof renderData === 'function') renderData();
+          else location.reload();
+        }
+      })
+      .catch(error => console.error("Gagal muat turun data:", error));
+  }
+
+  // 2. FUNGSI SIMPAN DATA (Bila Bendahari Tambah/Kemaskini Data)
+  function simpanDataKeLive(dataYuran) {
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(dataYuran)
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log("Data berjaya disimpan ke Google Sheet!");
+    })
+    .catch(error => console.error("Gagal simpan data:", error));
+  }
+
+  // Ambil data automatik sebaik sahaja halaman web selesai dimuatkan
+  window.addEventListener('DOMContentLoaded', () => {
+    muatTurunDataLive();
+  });
+</script>
 </body>
 </html>
