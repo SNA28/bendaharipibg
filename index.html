@@ -1440,53 +1440,45 @@
     muatTurunDataLive();
   });
 </script>
-    <!-- KOD AUTO-SYNC UNTUK AJK BUKA DIRECT KELUAR DATA -->
+<!-- KOD KHAS LIVE AUTOMATIK UNTUK AJK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-  // Pangkalan data awan awam percuma
-  const firebaseConfig = {
-    databaseURL: "https://pibg-stannes-default-rtdb.asia-southeast1.firebasedatabase.app/"
-  };
-  
+  // Sambungan terus ke Database Awan Khas
   if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp({
+      databaseURL: "https://pibg-stannes-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    });
   }
-  const dbLive = firebase.database();
+  const dbAwan = firebase.database().ref('YURAN_ST_ANNES_2026');
 
-  // 1. Apabila AJK buka link di HP, auto muat turun data dari awan
-  dbLive.ref('data_yuran_2026').on('value', (snapshot) => {
-    const dataAwan = snapshot.val();
-    if (dataAwan) {
-      // Simpan ke storage peranti
-      const currentData = localStorage.getItem('DATA_YURAN') || localStorage.getItem('yuranData') || '';
-      if (JSON.stringify(dataAwan) !== currentData) {
-        // Cari key tempatan asal web anda dan kemaskini
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          localStorage.setItem(k, JSON.stringify(dataAwan));
-        }
-        // Muat semula halaman supaya data baru terpapar
-        if (!sessionStorage.getItem('synced')) {
-          sessionStorage.setItem('synced', 'true');
+  // 1. BILA AJK BUKA LINK DI HP: Auto tarik data dari awan terus ke skrin HP diorang
+  dbAwan.on('value', (snapshot) => {
+    const dataTerbaru = snapshot.val();
+    if (dataTerbaru) {
+      const dataTempatan = localStorage.getItem('YURAN_ST_ANNES_2026');
+      if (JSON.stringify(dataTerbaru) !== dataTempatan) {
+        localStorage.setItem('YURAN_ST_ANNES_2026', JSON.stringify(dataTerbaru));
+        // Refresh automatik sekali sahaja supaya data terus terpapar di HP AJK
+        if (!sessionStorage.getItem('sudah_load')) {
+          sessionStorage.setItem('sudah_load', 'true');
           location.reload();
         }
       }
     }
   });
 
-  // 2. Apabila Anda (Bendahari) kunci masuk data, auto hantar ke awan
-  const asalSetItem = localStorage.setItem;
+  // 2. BILA ANDA (BENDAHARI) MASUK/UBAH DATA: Auto hantar data naik ke awan
+  const simpanAsal = localStorage.setItem;
   localStorage.setItem = function(key, value) {
-    asalSetItem.apply(this, arguments);
-    try {
-      const parsed = JSON.parse(value);
-      if (typeof parsed === 'object' && parsed !== null) {
-        dbLive.ref('data_yuran_2026').set(parsed);
-      }
-    } catch(e) {}
+    simpanAsal.apply(this, arguments);
+    if (key === 'YURAN_ST_ANNES_2026') {
+      try {
+        dbAwan.set(JSON.parse(value));
+      } catch(e) {}
+    }
   };
-</script>
+</script>   
 </body>
 </html>
