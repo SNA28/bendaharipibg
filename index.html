@@ -11,10 +11,12 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- SDK Firebase Compat (UMD) -->
+    <!-- SDK Firebase Compat (UMD) - Menjamin fail boleh dibuka terus dari komputer (CORS-free) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
+    <!-- Google Fonts: Fredoka untuk gaya bulat, kemas & mudah dibaca -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap');
         
@@ -35,6 +37,7 @@
             backdrop-filter: blur(10px);
         }
 
+        /* Batasi skrol bar agar lebih rapi */
         ::-webkit-scrollbar { width: 10px; height: 12px; }
         ::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -43,16 +46,17 @@
 </head>
 <body class="antialiased text-slate-800 pb-20">
 
-    <!-- HEADER -->
+    <!-- -->
     <header class="gradient-navy text-white shadow-2xl sticky top-0 z-50">
         <div class="max-w-[1600px] mx-auto px-8 py-6">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                
                 <div class="text-center md:text-left">
                     <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-yellow-400 uppercase">
                         Pengurusan Kewangan PIBG
                     </h1>
                     <p class="text-lg md:text-xl font-medium text-blue-200 uppercase tracking-widest mt-1">
-                        SK St. Anne's Convent <span class="ml-2 bg-emerald-500/20 text-emerald-400 text-xs font-extrabold px-2.5 py-1 rounded-full uppercase tracking-normal border border-emerald-400/30"><i class="fa-solid fa-cloud mr-1"></i> Awan Aktif (Real-Time Live)</span>
+                        SK St. Anne's Convent <span class="ml-2 bg-emerald-500/20 text-emerald-400 text-xs font-extrabold px-2.5 py-1 rounded-full uppercase tracking-normal border border-emerald-400/30"><i class="fa-solid fa-cloud mr-1"></i> Awan Aktif (Live)</span>
                     </p>
                 </div>
                 
@@ -67,8 +71,10 @@
 
     <main class="max-w-[1600px] mx-auto px-8 mt-10 space-y-10">
 
-        <!-- KAD RINGKASAN AKAUN -->
+        <!-- -->
         <section class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            
+            <!-- KAD UTAMA AKAUN BANK -->
             <div class="xl:col-span-4 lg:col-span-12 gradient-navy rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden flex flex-col justify-center min-h-[300px]">
                 <div class="absolute -right-10 -top-10 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
                 <div class="relative z-10 text-center md:text-left">
@@ -91,8 +97,10 @@
                 </div>
             </div>
 
-            <!-- DANA AM & KELAS TAMBAHAN -->
+            <!-- KAD ALOKASI SUB-DANA -->
             <div class="xl:col-span-8 lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- DANA AM PIBG -->
                 <div class="glass-card rounded-[2.5rem] p-8 border-t-8 border-t-blue-500 flex flex-col justify-between">
                     <div class="flex justify-between items-start">
                         <div>
@@ -113,6 +121,7 @@
                     </div>
                 </div>
 
+                <!-- DANA KELAS TAMBAHAN -->
                 <div class="glass-card rounded-[2.5rem] p-8 border-t-8 border-t-rose-500 flex flex-col justify-between">
                     <div class="flex justify-between items-start">
                         <div>
@@ -132,28 +141,134 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </section>
 
-        <!-- RUANGAN ADMIN (BORANG KEY-IN DATA) -->
-        <div id="sectionBorangKewangan" class="hidden space-y-6 mt-10 bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200 border-t-8 border-t-yellow-400">
-            <div class="flex flex-col lg:flex-row items-center justify-between border-b border-slate-100 pb-6 gap-4">
+        <!-- -->
+        <section>
+            <div class="flex items-center justify-between mb-6 border-b border-slate-200 pb-4">
                 <div class="flex items-center gap-4">
-                    <div class="bg-yellow-100 p-2.5 rounded-xl text-yellow-600"><i class="fa-solid fa-user-shield text-lg"></i></div>
-                    <h3 class="text-xl font-bold uppercase text-slate-800">Ruangan Pentadbir (Key-In Data Real-Time)</h3>
+                    <div class="h-10 w-2.5 bg-indigo-600 rounded-full"></div>
+                    <h3 class="text-2xl font-bold text-slate-800 uppercase tracking-wide">Permohonan Unit</h3>
                 </div>
-                <div class="flex flex-wrap gap-3">
-                    <button onclick="padamSemuaData()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-5 py-3 rounded-xl flex items-center gap-2 cursor-pointer transition-colors shadow">
-                        <i class="fa-solid fa-trash"></i> KOSONGKAN DATA FIRESTORE
-                    </button>
+                <div class="bg-indigo-50 px-6 py-2 rounded-xl border border-indigo-100 hidden sm:block">
+                    <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">Total Keseluruhan Dipohon</p>
+                    <p id="txtTotalPermohonanUnit" class="text-2xl font-black text-indigo-900">RM 0.00</p>
                 </div>
             </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Kurikulum -->
+                <div class="glass-card rounded-[2rem] p-6 border-b-4 border-b-blue-500 flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="bg-blue-100 text-blue-700 px-4 py-1 rounded-full font-bold text-sm uppercase tracking-wider">Kurikulum</span>
+                        <i class="fa-solid fa-book-open text-blue-500 text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-xs uppercase font-bold tracking-widest mb-1">Amaun Dipohon</p>
+                        <h4 id="txtTotalKuri" class="text-3xl font-extrabold text-slate-900 leading-none">RM 0.00</h4>
+                        <p class="text-sm font-semibold text-rose-600 mt-2 flex items-center gap-1">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Belum Selesai: <span id="txtBakiKuri" class="font-black text-base">RM 0.00</span>
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+                        <div class="bg-emerald-50 border border-emerald-100 text-emerald-800 py-2.5 rounded-xl">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Selesai</p>
+                            <p id="kuriSelesaiCount" class="text-xl font-black mt-0.5">0</p>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-100 text-amber-800 py-2.5 rounded-xl">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Pinda</p>
+                            <p id="kuriPindaCount" class="text-xl font-black mt-0.5">0</p>
+                        </div>
+                        <div class="bg-slate-100 border border-slate-200 text-slate-600 py-2.5 rounded-xl">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Belum</p>
+                            <p id="kuriBelumCount" class="text-xl font-black mt-0.5">0</p>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <!-- Kokurikulum -->
+                <div class="glass-card rounded-[2rem] p-6 hover:-translate-y-1 transition-all border-b-4 border-b-purple-500 flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="bg-purple-100 text-purple-700 px-4 py-1 rounded-full font-bold text-sm uppercase tracking-wider">Kokurikulum</span>
+                        <i class="fa-solid fa-trophy text-purple-500 text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-xs uppercase font-bold tracking-widest mb-1">Amaun Dipohon</p>
+                        <h4 id="txtTotalKoko" class="text-3xl font-extrabold text-slate-900 leading-none">RM 0.00</h4>
+                        <p class="text-sm font-semibold text-rose-600 mt-2 flex items-center gap-1">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Belum Selesai: <span id="txtBakiKoko" class="font-black text-base">RM 0.00</span>
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+                        <div class="bg-emerald-50 border border-emerald-100 text-emerald-800 py-2.5 rounded-xl">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Selesai</p>
+                            <p id="kokoSelesaiCount" class="text-xl font-black mt-0.5">0</p>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-100 text-amber-800 py-2.5 rounded-xl">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Pinda</p>
+                            <p id="kokoPindaCount" class="text-xl font-black mt-0.5">0</p>
+                        </div>
+                        <div class="bg-slate-100 border border-slate-200 text-slate-600 py-2.5 rounded-xl">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Belum</p>
+                            <p id="kokoBelumCount" class="text-xl font-black mt-0.5">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HEM -->
+                <div class="glass-card rounded-[2rem] p-6 border-b-4 border-b-teal-500 flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="bg-teal-100 text-teal-700 px-4 py-1 rounded-full font-bold text-sm uppercase tracking-wider">HEM</span>
+                        <i class="fa-solid fa-hand-holding-heart text-teal-500 text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-xs uppercase font-bold tracking-widest mb-1">Amaun Dipohon</p>
+                        <h4 id="txtTotalHEM" class="text-3xl font-extrabold text-slate-900 leading-none">RM 0.00</h4>
+                        <p class="text-sm font-semibold text-rose-600 mt-2 flex items-center gap-1">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Belum Selesai: <span id="txtBakiHEM" class="font-black text-base">RM 0.00</span>
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+                        <div class="bg-emerald-50 border border-emerald-100 text-emerald-800 py-2.5 rounded-xl">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Selesai</p>
+                            <p id="hemSelesaiCount" class="text-xl font-black mt-0.5">0</p>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-100 text-amber-800 py-2.5 rounded-xl">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Pinda</p>
+                            <p id="hemPindaCount" class="text-xl font-black mt-0.5">0</p>
+                        </div>
+                        <div class="bg-slate-100 border border-slate-200 text-slate-600 py-2.5 rounded-xl">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Belum</p>
+                            <p id="hemBelumCount" class="text-xl font-black mt-0.5">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- -->
+        <div id="sectionBorangKewangan" class="hidden space-y-6 mt-10 bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200 border-t-8 border-t-yellow-400">
+             
+             <div class="flex flex-col lg:flex-row items-center justify-between border-b border-slate-100 pb-6 gap-4">
+                 <div class="flex items-center gap-4">
+                     <div class="bg-yellow-100 p-2.5 rounded-xl text-yellow-600"><i class="fa-solid fa-user-shield text-lg"></i></div>
+                     <h3 class="text-xl font-bold uppercase text-slate-800">Ruangan Pentadbir (Key-In Data Baru)</h3>
+                 </div>
+                 <!-- BUTANG RESET DAN IMPORT CSV -->
+                 <div class="flex flex-wrap gap-3">
+                     <button onclick="bukaModalPengesahanReset()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-5 py-3 rounded-xl flex items-center gap-2 cursor-pointer transition-colors shadow">
+                         <i class="fa-solid fa-arrows-rotate"></i> FORMAT & SET SEMULA (KOSONG)
+                     </button>
+                 </div>
+              </div>
+
+             <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 <!-- Wang Masuk -->
                 <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
                     <h4 class="text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-plus"></i> Rekod Wang Masuk</h4>
-                    <form id="formDuitMasuk" onsubmit="tambahTransaksi(event, 'MASUK')" class="space-y-4 text-sm">
+                    <form id="formDuitMasuk" class="space-y-4 text-sm">
                         <div class="grid grid-cols-2 gap-4">
                             <input type="date" id="tarikhMasuk" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
                             <select id="pembahagianMasuk" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 font-bold outline-none">
@@ -172,14 +287,14 @@
                         </select>
                         <input type="text" id="perincianMasuk" placeholder="Perincian Transaksi / Nama Pembayar" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
                         <input type="number" step="0.01" id="amaunMasuk" placeholder="Amaun (RM)" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-base transition-colors shadow">SIMPAN DUIT MASUK</button>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-base transition-colors">SIMPAN DUIT MASUK</button>
                     </form>
                 </div>
                 
                 <!-- Wang Keluar -->
                 <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
                     <h4 class="text-lg font-bold text-rose-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-minus"></i> Rekod Wang Keluar</h4>
-                    <form id="formDuitKeluar" onsubmit="tambahTransaksi(event, 'KELUAR')" class="space-y-4 text-sm">
+                    <form id="formDuitKeluar" class="space-y-4 text-sm">
                         <div class="grid grid-cols-2 gap-4">
                             <input type="date" id="tarikhKeluar" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
                             <select id="pembahagianKeluar" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 font-bold outline-none">
@@ -188,7 +303,7 @@
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
-                            <input type="text" id="noCek" placeholder="No. Cek / Baucar" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+                            <input type="text" id="noCek" placeholder="No. Cek / Baucar" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
                             <select id="katKeluar" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
                                 <option value="Saguhati">Saguhati & Elaun</option>
                                 <option value="Kebajikan">Kebajikan Murid</option>
@@ -205,258 +320,1165 @@
                         <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition-colors text-base shadow">SIMPAN DUIT KELUAR</button>
                     </form>
                 </div>
-            </div>
+             </div>
+
+             <!-- Yuran Kelas -->
+             <div class="bg-indigo-50/50 rounded-2xl p-6 border border-indigo-100 mt-6 text-sm">
+                <h4 class="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-users-gear"></i> Kemaskini Status Yuran Kelas</h4>
+                <form id="formStatusYuran" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <select id="kelasMuridPilih" class="w-full bg-white border border-slate-300 font-bold text-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="1 Daffodils">1 Daffodils</option> <option value="1 Camellia">1 Camellia</option>
+                            <option value="2 Daffodils">2 Daffodils</option> <option value="2 Camellia">2 Camellia</option>
+                            <option value="3 Daffodils">3 Daffodils</option> <option value="3 Camellia">3 Camellia</option>
+                            <option value="4 Daffodils">4 Daffodils</option> <option value="4 Camellia">4 Camellia</option>
+                            <option value="5 Daffodils">5 Daffodils</option> <option value="5 Camellia">5 Camellia</option>
+                            <option value="6 Daffodils">6 Daffodils</option> <option value="6 Camellia">6 Camellia</option>
+                        </select>
+                    </div>
+                    <input type="number" id="jumlahMuridInput" placeholder="Jumlah Murid Kelas" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="number" id="selesaiBayarInput" placeholder="Selesai Bayar (Bil. Murid)" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow transition-colors text-base">KEMASKINI DATA</button>
+                </form>
+             </div>
+
+             <!-- Borang Permohonan Dana Unit Baru -->
+             <div class="bg-indigo-50/50 rounded-2xl p-6 border border-indigo-100 mt-6 text-sm">
+                <h4 class="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-file-invoice-dollar"></i> Daftar Permohonan Dana Unit Baharu</h4>
+                <form id="formPermohonanDana" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <input type="date" id="tarikhMohon" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+                    <select id="unitMohon" class="w-full bg-white border border-slate-300 font-bold text-slate-700 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="Kurikulum">Kurikulum</option>
+                        <option value="Kokurikulum">Kokurikulum</option>
+                        <option value="HEM">HEM</option>
+                    </select>
+                    <input type="text" id="pemohonNama" placeholder="Nama Pemohon" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="number" step="0.01" id="amaunMohon" placeholder="Amaun (RM)" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div class="md:col-span-3">
+                        <input type="text" id="projekMohon" placeholder="Nama Projek / Aktiviti" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow transition-colors text-base">HANTAR PERMOHONAN</button>
+                </form>
+             </div>
+
+             <!-- Borang Anggaran Belanjawan Tetap Baru -->
+             <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 mt-6 text-sm">
+                <h4 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-calculator"></i> Daftar Anggaran Komitmen / Belanjawan Tetap Baharu</h4>
+                <form id="formAnggaranBelanjawan" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-2">
+                        <input type="text" id="namaAnggaranInput" placeholder="Nama Komitmen (Contoh: Penapis Air Coway)" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+                    </div>
+                    <input type="number" step="0.01" id="kadarAnggaranInput" placeholder="Kadar Sebulan (RM)" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+                    <input type="number" id="bulanAnggaranInput" placeholder="Bilangan Bulan" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
+                    <div class="md:col-span-4 flex justify-end">
+                        <button type="submit" class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-2.5 px-8 rounded-xl shadow transition-colors cursor-pointer text-base">TAMBAH ANGGARAN</button>
+                    </div>
+                </form>
+             </div>
+
+             <!-- KOTAK IMPORT CSV SECARA MANUAL UNTUK MENYINKRONKAN DATA -->
+             <div class="bg-indigo-50/50 rounded-2xl p-6 border border-indigo-100 mt-6 text-sm">
+                <h4 class="text-lg font-bold text-indigo-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-file-import"></i> Muat Naik Data Tempatan (Import CSV)</h4>
+                <p class="text-slate-600 text-xs mb-4">Jika data di pelayan awan kosong, anda boleh mengeksport data dari versi desktop anda sebagai CSV, kemudian memuat naiknya di sini untuk disinkronkan secara langsung ke awan.</p>
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <input type="file" id="inputCSV" accept=".csv" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2 outline-none">
+                    <button id="btnImporCSV" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl transition-colors shadow-md cursor-pointer whitespace-nowrap"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Penyamaan Ke Awan</button>
+                </div>
+             </div>
         </div>
 
-        <!-- BUKU TUNAI / SENARAI TRANSAKSI -->
-        <section class="mt-10 space-y-6">
-            <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
-                <select id="filterDana" onchange="paparJadual()" class="bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-4 py-3 font-bold outline-none">
-                    <option value="SEMUA">Papar Semua Dana (Buku Tunai Gabungan)</option>
-                    <option value="PIBG">Dana PIBG Sahaja</option>
-                    <option value="Kelas Tambahan">Kelas Tambahan Sahaja</option>
-                </select>
+        <!-- -->
+        <section class="mt-10 space-y-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                 <div class="glass-card rounded-[2.5rem] p-8">
+                      <h3 class="text-xl font-bold text-slate-800 mb-4"><i class="fa-solid fa-chart-line text-blue-600"></i> Analisis Aliran Tunai Tahunan</h3>
+                      <div class="h-[380px] relative"><canvas id="chartKewanganDuaDana"></canvas></div>
+                 </div>
+                 <div class="glass-card rounded-[2.5rem] p-8">
+                      <div class="flex items-center justify-between mb-4">
+                          <h3 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-chart-bar text-amber-500"></i> Status Kutipan Mengikut Kelas</h3>
+                          <div class="bg-emerald-100 text-emerald-800 font-bold text-sm px-4 py-1.5 rounded-xl">Total Murid: <span id="txtJumlahMuridKeseluruhan">0</span></div>
+                      </div>
+                      <div class="h-[380px] relative"><canvas id="chartKewanganKelas"></canvas></div>
+                 </div>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
-                <!-- MASUK -->
-                <div class="glass-card rounded-[2.5rem] overflow-hidden flex flex-col shadow-xl border-t-8 border-t-emerald-500">
-                    <div class="p-6 bg-white border-b border-slate-200"><h3 class="text-xl font-bold text-slate-800">Penyata Penerimaan (Wang Masuk)</h3></div>
-                    <div class="overflow-x-auto max-h-[500px] bg-white">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-50 text-slate-500 uppercase text-xs sticky top-0">
-                                <tr>
-                                    <th class="p-4">Tarikh</th>
-                                    <th class="p-4">Dana</th>
-                                    <th class="p-4">Perincian</th>
-                                    <th class="p-4 text-right">Amaun (RM)</th>
-                                    <th class="p-4 text-center admin-only hidden">Tindakan</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tblMasuk" class="divide-y divide-slate-100"></tbody>
-                        </table>
-                    </div>
+            <!-- BUKU TUNAI -->
+            <div class="space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200">
+                    <select id="filterDana" onchange="paparJadual()" class="bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-4 py-3 font-bold outline-none">
+                        <option value="SEMUA">Papar Semua Dana (Buku Tunai Gabungan)</option>
+                        <option value="PIBG">Dana PIBG Sahaja</option>
+                        <option value="Kelas Tambahan">Kelas Tambahan Sahaja</option>
+                    </select>
+                    <button onclick="eksportCSV()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-6 py-3 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 shadow-sm cursor-pointer">
+                        <i class="fa-solid fa-file-excel"></i> Eksport (CSV)
+                    </button>
                 </div>
 
-                <!-- KELUAR -->
-                <div class="glass-card rounded-[2.5rem] overflow-hidden flex flex-col shadow-xl border-t-8 border-t-rose-500">
-                    <div class="p-6 bg-white border-b border-slate-200"><h3 class="text-xl font-bold text-slate-800">Penyata Pembayaran (Wang Keluar)</h3></div>
-                    <div class="overflow-x-auto max-h-[500px] bg-white">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-50 text-slate-500 uppercase text-xs sticky top-0">
-                                <tr>
-                                    <th class="p-4">Tarikh</th>
-                                    <th class="p-4">Dana</th>
-                                    <th class="p-4">Perincian</th>
-                                    <th class="p-4 text-right">Amaun (RM)</th>
-                                    <th class="p-4 text-center admin-only hidden">Tindakan</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tblKeluar" class="divide-y divide-slate-100"></tbody>
-                        </table>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                    <!-- MASUK -->
+                    <div class="glass-card rounded-[2.5rem] overflow-hidden flex flex-col shadow-xl border-t-8 border-t-emerald-500">
+                        <div class="p-6 bg-white border-b border-slate-200"><h3 class="text-xl font-bold text-slate-800">Penyata Penerimaan (Wang Masuk)</h3></div>
+                        <div class="overflow-x-auto max-h-[500px] bg-white">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 text-slate-600 text-xs font-bold uppercase tracking-wider border-b sticky top-0"><tr><th class="p-4">Tarikh</th><th class="p-4">Butiran</th><th class="p-4 text-right">Debit (RM)</th><th class="p-4 text-center id-tindakan hidden">Aksi</th></tr></thead><tbody id="badanJadualMasuk" class="text-sm md:text-base font-medium text-slate-700 divide-y divide-slate-100"></tbody></table>
+                        </div>
+                    </div>
+                    <!-- KELUAR -->
+                    <div class="glass-card rounded-[2.5rem] overflow-hidden flex flex-col shadow-xl border-t-8 border-t-rose-500">
+                        <div class="p-6 bg-white border-b border-slate-200"><h3 class="text-xl font-bold text-slate-800">Penyata Pembayaran (Wang Keluar)</h3></div>
+                        <div class="overflow-x-auto max-h-[500px] bg-white">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 text-slate-600 text-xs font-bold uppercase tracking-wider border-b sticky top-0"><tr><th class="p-4">Tarikh</th><th class="p-4">Butiran</th><th class="p-4 text-right">Kredit (RM)</th><th class="p-4 text-center id-tindakan hidden">Aksi</th></tr></thead><tbody id="badanJadualKeluar" class="text-sm md:text-base font-medium text-slate-700 divide-y divide-slate-100"></tbody></table>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- ANALISIS KELAS -->
+            <div class="glass-card rounded-[2.5rem] overflow-hidden shadow-xl border-t-8 border-t-amber-500">
+                <div class="p-6 bg-white border-b border-slate-200"><h3 class="text-xl font-bold text-slate-800">Penyata Pembayaran Yuran Mengikut Kelas</h3></div>
+                <div class="overflow-x-auto"><table class="w-full text-left border-collapse"><thead class="bg-slate-50 text-slate-600 text-sm font-bold uppercase border-b border-slate-200"><tr><th class="p-5">Nama Kelas</th><th class="p-5 text-center bg-blue-50/20 text-slate-800">Jumlah Murid (A)</th><th class="p-5 text-center bg-emerald-50/20 text-emerald-800">Selesai Bayar (B)</th><th class="p-5 text-center bg-rose-50/20 text-rose-800">Belum Bayar (A - B)</th></tr></thead><tbody id="badanAnalisisKutipanKelas" class="text-base md:text-lg font-semibold text-slate-700 divide-y divide-slate-100"></tbody></table></div>
+            </div>
+
+            <!-- PERMOHONAN UNIT -->
+            <div class="glass-card rounded-[2.5rem] overflow-hidden flex flex-col shadow-xl">
+                <div class="p-6 bg-white border-b border-slate-200 flex flex-col sm:flex-row justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">Permohonan Dana Setiap Unit</h3>
+                        <p class="text-slate-500 text-xs mt-1 uppercase tracking-wider font-bold">Rekod Semakan Status Kelulusan Bantuan Aktiviti Sekolah</p>
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                        <select id="filterUnit" onchange="paparJadualPermohonan()" class="bg-slate-50 border rounded-xl px-4 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="SEMUA">All Units</option>
+                            <option value="Kurikulum">Kuri</option>
+                            <option value="Kokurikulum">Koko</option>
+                            <option value="HEM">HEM</option>
+                        </select>
+                        <select id="filterStatus" onchange="paparJadualPermohonan()" class="bg-slate-50 border rounded-xl px-4 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="SEMUA">Semua Status</option>
+                            <option value="Selesai">Selesai</option>
+                            <option value="Pinda">Pinda</option>
+                            <option value="Belum">Belum</option>
+                        </select>
+                        <button onclick="eksportPermohonanCSV()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 px-5 py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-file-excel"></i> CSV Permohonan
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto max-h-[500px] bg-white">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                            <tr>
+                                <th class="p-5 whitespace-nowrap">Tarikh</th>
+                                <th class="p-5">Pemohon & Aktiviti</th>
+                                <th class="p-5 text-right">Amaun</th>
+                                <th class="p-5 text-center">Status</th>
+                                <th class="p-5 text-center id-tindakanPermohonan hidden">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="badanJadualPermohonan" class="text-sm md:text-base font-medium text-slate-700 divide-y divide-slate-100">
+                            <!-- JS Inject -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ================= SECTION 5: ANGGARAN BELANJAWAN PROJEKSI BAKI AM PIBG ================= -->
+            <div class="glass-card rounded-[2.5rem] overflow-hidden shadow-2xl border-t-8 border-t-slate-700">
+                <div class="p-8 md:p-10 bg-slate-900 text-white">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="bg-yellow-400 p-3.5 rounded-2xl text-slate-950"><i class="fa-solid fa-calculator text-2xl"></i></div>
+                        <div>
+                            <h3 class="text-2xl md:text-3xl font-bold uppercase text-yellow-400 tracking-tight">Anggaran Belanjawan Dana Am PIBG</h3>
+                            <p class="text-slate-400 text-sm uppercase tracking-wider font-bold mt-1">Unjuran Baki Komitmen Aliran Tunai</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8 items-center">
+                        <div class="lg:col-span-7 space-y-4 text-base md:text-lg">
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                                <span class="text-slate-300">Baki Semasa Dana Am PIBG:</span>
+                                <span id="txtAnggaranBakiPIBG" class="font-bold text-emerald-400 text-xl">RM 0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                                <span class="text-slate-300">Tolak: Permohonan Dana Unit (Belum Selesai):</span>
+                                <span id="txtAnggaranTolakPermohonan" class="font-bold text-rose-400 text-xl">- RM 0.00</span>
+                            </div>
+                            
+                            <!-- TEMPAT ANGGARAN DINAMIK DIINJEK (Komitmen Bulanan Ditambah Sendiri) -->
+                            <div id="senaraiAnggaranDinamik" class="space-y-4">
+                                <!-- Anggaran komitmen diletakkan di sini secara dinamik -->
+                            </div>
+                        </div>
+                        
+                        <div class="lg:col-span-5 bg-slate-950/80 rounded-[2rem] p-8 text-center border border-slate-800 shadow-inner flex flex-col justify-center min-h-[220px]">
+                            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">Anggaran Baki Bersih Yang Tinggal</p>
+                            <div id="txtAnggaranBakiTinggal" class="text-3xl md:text-4xl lg:text-5xl font-black text-emerald-400 tracking-tight">RM 0.00</div>
+                            <p class="text-[11px] text-slate-500 mt-4 leading-relaxed font-bold">Projeksi baki ini mengambil kira semua liabiliti belum selesai dan komitmen bulanan tetap sehingga akhir tahun.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </section>
+
     </main>
 
-    <!-- KOD SCRIPT FIRESTORE REAL-TIME -->
+    <!-- MODAL PASSWORD -->
+    <div id="modalKataLaluan" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+        <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center space-y-5 transform transition-all text-sm">
+            <div class="w-16 h-10 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+                <h3 class="text-xl font-bold text-slate-800">Akses Pentadbir</h3>
+                <p class="text-xs text-slate-500 mt-1">Sila masukkan kata laluan keselamatan</p>
+            </div>
+            <input type="password" id="inputKunci" placeholder="••••" class="w-full bg-slate-100 rounded-2xl p-4 text-center text-2xl tracking-[0.8rem] font-black outline-none border-2 border-transparent focus:border-blue-500 transition-colors">
+            <p id="pesanRalatLaluan" class="text-xs text-rose-500 font-bold uppercase tracking-widest hidden">KATA LALUAN SALAH!</p>
+            <div class="flex gap-3 pt-1">
+                <button onclick="tutupModalLaluan()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 py-3 rounded-2xl font-bold transition-colors">BATAL</button>
+                <button onclick="sahkanKataLaluan()" class="w-1/2 bg-blue-900 hover:bg-blue-950 text-white py-3 rounded-2xl font-bold shadow transition-colors">SAHKAN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRM DELETE -->
+    <div id="modalPengesahan" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+        <div class="bg-white rounded-[2.5rem] p-10 max-w-sm w-full shadow-2xl text-center space-y-6">
+            <div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-4xl shadow-inner"><i class="fa-solid fa-trash-can text-3xl"></i></div>
+            <div>
+                <h3 id="txtSahkanPadamTajuk" class="text-xl font-bold text-slate-800">Padam Rekod?</h3>
+                <p id="txtSahkanPadamKeterangan" class="text-sm text-slate-500 mt-2">Tindakan ini tidak boleh diundurkan semula.</p>
+            </div>
+            <div class="flex gap-4 pt-4">
+                <button onclick="tutupModalPengesahan()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 py-4 rounded-2xl text-sm font-bold transition-colors">BATAL</button>
+                <button id="btnSahkanPadam" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white py-4 rounded-2xl text-sm font-bold shadow-lg transition-colors">PADAM TERUS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFIKASI TOAST -->
+    <div id="notifikasiToast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] transform translate-y-24 opacity-0 transition-all duration-300 ease-out">
+        <div class="bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-slate-700 text-sm">
+            <span id="ikonToast"><i class="fa-solid fa-check-circle text-emerald-400 text-lg"></i></span>
+            <p id="mesejToast" class="text-sm font-bold uppercase tracking-widest"></p>
+        </div>
+    </div>
+
+    <!-- -->
     <script>
-        // 1. KONFIGURASI FIREBASE FIRESTORE
-        // Sila salin & gantikan nilai di bawah dari Firebase Console > Project Settings jika berbeza
-        const firebaseConfig = {
-            apiKey: "AIzaSy_YOUR_API_KEY",
-            authDomain: "bendahari-pibg.firebaseapp.com",
-            projectId: "bendahari-pibg",
-            storageBucket: "bendahari-pibg.appspot.com",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:abcdef123456"
+        // Pembolehubah Global daripada Persekitaran Canvas
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'st-annes-covenant-pibg';
+        let firebaseConfig = null;
+        try {
+            firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        } catch(e) {
+            console.error("Ralat analisis config:", e);
+        }
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db = null;
+        let auth = null;
+        let isFirebaseActive = false;
+        let currentUser = null;
+
+        // KUNCI SIMPANAN MEMORI BARU (Mengatasi data contoh dari sisa localStorage lama)
+        const KEY_TRANSAKSI = 'st_annes_pibg_v3_clean_transaksi';
+        const KEY_PERMOHONAN = 'st_annes_pibg_v3_clean_permohonan';
+        const KEY_MURID = 'st_annes_pibg_v3_clean_murid';
+        const KEY_ANGGARAN = 'st_annes_pibg_v3_clean_anggaran';
+
+        // Data Permulaan Tempatan Sebagai Lalai - DISET KEPADA 100% KOSONG
+        const defaultDatabase = [];
+        const defaultPermohonanDatabase = [];
+        const defaultAnggaranDatabase = [];
+
+        // Murid diletakkan pada kelas dengan nilai permulaan 0 murid (Sedia diisi oleh pentadbir)
+        const defaultMuridDatabase = {
+            "1 Daffodils": { total: 0, selesai: 0 }, "1 Camellia": { total: 0, selesai: 0 },
+            "2 Daffodils": { total: 0, selesai: 0 }, "2 Camellia": { total: 0, selesai: 0 },
+            "3 Daffodils": { total: 0, selesai: 0 }, "3 Camellia": { total: 0, selesai: 0 },
+            "4 Daffodils": { total: 0, selesai: 0 }, "4 Camellia": { total: 0, selesai: 0 },
+            "5 Daffodils": { total: 0, selesai: 0 }, "5 Camellia": { total: 0, selesai: 0 },
+            "6 Daffodils": { total: 0, selesai: 0 }, "6 Camellia": { total: 0, selesai: 0 }
         };
 
-        // Inisialisasi Firebase & Firestore
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+        // Pengaktifan pembolehubah memori aktif (Semuanya bermula dengan kosong)
+        let database = [];
+        let permohonanDatabase = [];
+        let muridDatabase = JSON.parse(JSON.stringify(defaultMuridDatabase));
+        let anggaranDatabase = [];
+
+        let modAdmin = false;
+        let idRekodMahuDipadam = null;
+        let jenisPadam = 'kewangan';
+        let cartaKewanganInstance = null;
+        let cartaKewanganKelasInstance = null;
+
+        // --- SISTEM NOTIFIKASI & MODAL ---
+        function tunjukToast(mesej, status = 'sukses') {
+            const toast = document.getElementById('notifikasiToast');
+            if (toast) {
+                const mesejToast = document.getElementById('mesejToast');
+                const ikonToast = document.getElementById('ikonToast');
+                if (mesejToast) mesejToast.innerText = mesej;
+                if (ikonToast) {
+                    ikonToast.innerHTML = status === 'sukses' ? '<i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>' : '<i class="fa-solid fa-circle-exclamation text-rose-500 text-lg"></i>';
+                }
+                toast.classList.remove('translate-y-24', 'opacity-0');
+                setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
+            }
         }
-        const db = firebase.firestore();
 
-        let senaraiTransaksi = [];
-        let isAdmin = false;
-
-        // 2. MOD ADMIN TOGGLE
         function bukaModalLaluan() {
-            if (isAdmin) {
-                isAdmin = false;
-                kemaskiniModAdminUI();
-                alert("Anda telah keluar dari Mod Admin.");
-            } else {
-                let laluan = prompt("Masukkan Kata Laluan Admin:");
-                if (laluan === "admin123") { // Ganti kata laluan mengikut cita rasa anda
-                    isAdmin = true;
-                    kemaskiniModAdminUI();
-                    alert("Berjaya masuk Mod Admin!");
-                } else if (laluan !== null) {
-                    alert("Kata laluan salah!");
+            if (modAdmin) { 
+                modAdmin = false; 
+                kemaskiniStatusMod(); 
+                tunjukToast("MOD PENDENGAR DIAKTIFKAN", "info"); 
+            } else { 
+                const modal = document.getElementById('modalKataLaluan');
+                if (modal) {
+                    modal.classList.remove('hidden'); 
+                    document.getElementById('inputKunci').value = ''; 
+                    document.getElementById('inputKunci').focus(); 
+                    document.getElementById('pesanRalatLaluan').classList.add('hidden');
                 }
             }
         }
 
-        function kemaskiniModAdminUI() {
-            const section = document.getElementById("sectionBorangKewangan");
-            const btn = document.getElementById("btnToggleMode");
-            const adminCols = document.querySelectorAll(".admin-only");
-
-            if (isAdmin) {
-                section.classList.remove("hidden");
-                btn.innerHTML = `<i class="fa-solid fa-unlock text-base"></i> KELUAR ADMIN`;
-                btn.className = "bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-base px-8 py-3 rounded-2xl transition-all shadow-xl flex items-center gap-2 cursor-pointer";
-                adminCols.forEach(el => el.classList.remove("hidden"));
-            } else {
-                section.classList.add("hidden");
-                btn.innerHTML = `<i class="fa-solid fa-lock text-base"></i> MOD ADMIN`;
-                btn.className = "bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-base px-8 py-3 rounded-2xl transition-all shadow-xl flex items-center gap-2 cursor-pointer border border-yellow-300";
-                adminCols.forEach(el => el.classList.add("hidden"));
-            }
-            paparJadual();
+        function tutupModalLaluan() { 
+            const modal = document.getElementById('modalKataLaluan');
+            if (modal) modal.classList.add('hidden'); 
         }
 
-        // 3. TAMBAH TRANSAKSI KE FIRESTORE
-        function tambahTransaksi(e, jenis) {
-            e.preventDefault();
+        // Sahkan Kunci Kata Laluan
+        function sahkanKataLaluan() {
+            if (document.getElementById('inputKunci').value === "1234") {
+                modAdmin = true; 
+                tutupModalLaluan(); 
+                kemaskiniStatusMod(); 
+                tunjukToast("MOD ADMIN AKTIF");
+            } else { 
+                const ralat = document.getElementById('pesanRalatLaluan');
+                if (ralat) ralat.classList.remove('hidden'); 
+            }
+        }
+
+        function kemaskiniStatusMod() {
+            const btn = document.getElementById('btnToggleMode');
+            const borangKew = document.getElementById('sectionBorangKewangan');
+            const tindakan = document.querySelectorAll('.id-tindakan, .id-tindakanPermohonan');
+
+            if (modAdmin) {
+                if (btn) {
+                    btn.innerHTML = `<i class="fa-solid fa-unlock"></i> LOG KELUAR ADMIN`;
+                    btn.className = "bg-rose-600 hover:bg-rose-700 text-white font-bold text-lg px-8 py-3.5 rounded-2xl shadow-xl flex items-center gap-2 cursor-pointer transition-all";
+                }
+                if (borangKew) borangKew.classList.remove('hidden');
+                tindakan.forEach(el => el.classList.remove('hidden'));
+            } else {
+                if (btn) {
+                    btn.innerHTML = `<i class="fa-solid fa-lock"></i> MOD ADMIN`;
+                    btn.className = "bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-lg px-8 py-3.5 rounded-2xl shadow-xl flex items-center gap-2 cursor-pointer border border-yellow-300 transition-all";
+                }
+                if (borangKew) borangKew.classList.add('hidden');
+                tindakan.forEach(el => el.classList.add('hidden'));
+            }
+            paparJadual(); 
+            paparJadualPermohonan();
+            prosesKewanganAutomatik();
+        }
+
+        // -->
+        function functionFallbackLocal() {
+            isFirebaseActive = false;
             
-            let tarikh, dana, kategori, perincian, amaun, noCek = "";
+            // Muat turun data daripada kunci penyimpanan baharu yang dipastikan kosong
+            const localDb = localStorage.getItem(KEY_TRANSAKSI);
+            database = localDb ? JSON.parse(localDb) : JSON.parse(JSON.stringify(defaultDatabase));
+            
+            const localPermohonan = localStorage.getItem(KEY_PERMOHONAN);
+            permohonanDatabase = localPermohonan ? JSON.parse(localPermohonan) : JSON.parse(JSON.stringify(defaultPermohonanDatabase));
+            
+            const localMurid = localStorage.getItem(KEY_MURID);
+            muridDatabase = localMurid ? JSON.parse(localMurid) : JSON.parse(JSON.stringify(defaultMuridDatabase));
 
-            if (jenis === "MASUK") {
-                tarikh = document.getElementById("tarikhMasuk").value;
-                dana = document.getElementById("pembahagianMasuk").value;
-                kategori = document.getElementById("katMasuk").value;
-                perincian = document.getElementById("perincianMasuk").value;
-                amaun = parseFloat(document.getElementById("amaunMasuk").value);
+            const localAnggaran = localStorage.getItem(KEY_ANGGARAN);
+            anggaranDatabase = localAnggaran ? JSON.parse(localAnggaran) : JSON.parse(JSON.stringify(defaultAnggaranDatabase));
+            
+            prosesKewanganAutomatik();
+            prosesPermohonanAutomatik();
+            paparAnalisisKutipanKelas();
+        }
+
+        function simpanStorage() {
+            localStorage.setItem(KEY_TRANSAKSI, JSON.stringify(database));
+            prosesKewanganAutomatik();
+        }
+
+        // --- SISTEM KEWANGAN BUKU TUNAI ---
+        async function simpanDuitMasuk(e) {
+            if (e) e.preventDefault();
+            const rekod = {
+                tarikh: document.getElementById('tarikhMasuk').value,
+                dana: document.getElementById('pembahagianMasuk').value, 
+                jenis: 'Masuk',
+                kategori: document.getElementById('katMasuk').value,
+                kelas: 'Umum', 
+                perincian: document.getElementById('perincianMasuk').value,
+                amaun: parseFloat(document.getElementById('amaunMasuk').value),
+                dibuatPada: Date.now()
+            };
+
+            if (isFirebaseActive && currentUser) {
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('transaksi').add(rekod);
+                } catch(err) {
+                    console.error(err);
+                    tunjukToast("Gagal menyimpan ke awan!", "ralat");
+                }
             } else {
-                tarikh = document.getElementById("tarikhKeluar").value;
-                dana = document.getElementById("pembahagianKeluar").value;
-                noCek = document.getElementById("noCek").value;
-                kategori = document.getElementById("katKeluar").value;
-                perincian = document.getElementById("perincianKeluar").value;
-                amaun = parseFloat(document.getElementById("amaunKeluar").value);
+                rekod.id = Date.now();
+                database.push(rekod);
+                simpanStorage();
             }
-
-            db.collection("transaksi").add({
-                jenis: jenis,
-                tarikh: tarikh,
-                dana: dana,
-                kategori: kategori,
-                perincian: perincian,
-                noCek: noCek,
-                amaun: amaun,
-                created_at: firebase.firestore.FieldValue.serverTimestamp()
-            })
-            .then(() => {
-                alert("Rekod berjaya disimpan secara Real-Time!");
-                if(jenis === "MASUK") document.getElementById("formDuitMasuk").reset();
-                else document.getElementById("formDuitKeluar").reset();
-            })
-            .catch((error) => {
-                alert("Gagal menyimpan data: " + error.message);
-            });
+            document.getElementById('formDuitMasuk').reset(); 
+            tunjukToast("WANG MASUK DISIMPAN");
         }
 
-        // 4. PADAM TRANSAKSI DARI FIRESTORE
-        function padamTransaksi(id) {
-            if (confirm("Adakah anda yakin untuk memadam rekod ini?")) {
-                db.collection("transaksi").doc(id).delete()
-                .then(() => alert("Rekod dipadam!"))
-                .catch(err => alert("Gagal padam: " + err.message));
+        async function simpanDuitKeluar(e) {
+            if (e) e.preventDefault();
+            const rekod = {
+                tarikh: document.getElementById('tarikhKeluar').value,
+                dana: document.getElementById('pembahagianKeluar').value, 
+                jenis: 'Keluar',
+                kategori: document.getElementById('katKeluar').value,
+                perincian: `${document.getElementById('perincianKeluar').value} (Cek/Baucar: ${document.getElementById('noCek').value})`,
+                amaun: parseFloat(document.getElementById('amaunKeluar').value),
+                dibuatPada: Date.now()
+            };
+
+            if (isFirebaseActive && currentUser) {
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('transaksi').add(rekod);
+                } catch(err) {
+                    console.error(err);
+                    tunjukToast("Gagal menyimpan ke awan!", "ralat");
+                }
+            } else {
+                rekod.id = Date.now();
+                database.push(rekod);
+                simpanStorage();
             }
+            document.getElementById('formDuitKeluar').reset(); 
+            tunjukToast("WANG KELUAR DISIMPAN");
         }
 
-        // 5. BACA DATA REAL-TIME DARI FIRESTORE (onSnapshot)
-        function mulaDengarDataRealtime() {
-            db.collection("transaksi").orderBy("tarikh", "desc")
-            .onSnapshot((snapshot) => {
-                senaraiTransaksi = [];
-                snapshot.forEach((doc) => {
-                    senaraiTransaksi.push({ id: doc.id, ...doc.data() });
-                });
-                kirimBakiKewangan();
-                paparJadual();
-            }, (error) => {
-                console.error("Ralat membaca Firestore: ", error);
-            });
+        async function simpanPermohonan(e) {
+            if (e) e.preventDefault();
+            const rekod = {
+                tarikh: document.getElementById('tarikhMohon').value,
+                unit: document.getElementById('unitMohon').value,
+                projek: document.getElementById('projekMohon').value,
+                pemohon: document.getElementById('pemohonNama').value,
+                amaun: parseFloat(document.getElementById('amaunMohon').value),
+                status: 'Belum',
+                id: Date.now()
+            };
+
+            if (isFirebaseActive && currentUser) {
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('permohonan').add(rekod);
+                } catch(err) {
+                    console.error(err);
+                    tunjukToast("Gagal menyimpan ke awan!", "ralat");
+                }
+            } else {
+                rekod.id = Date.now();
+                permohonanDatabase.push(rekod);
+                localStorage.setItem(KEY_PERMOHONAN, JSON.stringify(permohonanDatabase));
+                prosesPermohonanAutomatik();
+            }
+            document.getElementById('formPermohonanDana').reset(); 
+            tunjukToast("PERMOHONAN BERJAYA DIREKOD!");
         }
 
-        // 6. KIRA KESELURUHAN BAKI
-        function kirimBakiKewangan() {
+        async function simpanAnggaranBelanjawan(e) {
+            if (e) e.preventDefault();
+            const nama = document.getElementById('namaAnggaranInput').value;
+            const kadar = parseFloat(document.getElementById('kadarAnggaranInput').value);
+            const bulan = parseInt(document.getElementById('bulanAnggaranInput').value);
+            const jumlah = kadar * bulan;
+
+            const rekod = {
+                nama: nama,
+                kadar: kadar,
+                bulan: bulan,
+                jumlah: jumlah,
+                id: Date.now()
+            };
+
+            if (isFirebaseActive && currentUser) {
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('anggaran').add(rekod);
+                } catch(err) {
+                    console.error(err);
+                    tunjukToast("Gagal menyimpan ke awan!", "ralat");
+                }
+            } else {
+                rekod.id = Date.now();
+                anggaranDatabase.push(rekod);
+                localStorage.setItem(KEY_ANGGARAN, JSON.stringify(anggaranDatabase));
+                prosesKewanganAutomatik();
+            }
+            document.getElementById('formAnggaranBelanjawan').reset();
+            tunjukToast("ANGGARAN BELANJAWAN DITAMBAH!");
+        }
+
+        async function padamAnggaran(idCloud, localId) {
+            if (isFirebaseActive && currentUser) {
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('anggaran').doc(idCloud).delete();
+                } catch(err) {
+                    console.error(err);
+                    tunjukToast("Gagal memadam anggaran di awan!", "ralat");
+                }
+            } else {
+                anggaranDatabase = anggaranDatabase.filter(i => i.id !== localId);
+                localStorage.setItem(KEY_ANGGARAN, JSON.stringify(anggaranDatabase));
+                prosesKewanganAutomatik();
+            }
+            tunjukToast("ANGGARAN BELANJAWAN DIPADAM!");
+        }
+
+        async function simpanBilanganMurid(e) {
+            if (e) e.preventDefault();
+            let k = document.getElementById('kelasMuridPilih').value;
+            muridDatabase[k] = {
+                total: parseInt(document.getElementById('jumlahMuridInput').value),
+                selesai: parseInt(document.getElementById('selesaiBayarInput').value)
+            };
+
+            if (isFirebaseActive && currentUser) {
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('murid_kelas').doc('data_murid').set(muridDatabase);
+                } catch(err) {
+                    console.error(err);
+                    tunjukToast("Gagal menyimpan bilangan murid di awan!", "ralat");
+                }
+            } else {
+                localStorage.setItem(KEY_MURID, JSON.stringify(muridDatabase));
+                paparAnalisisKutipanKelas();
+                binaCartaAliran();
+            }
+            document.getElementById('formStatusYuran').reset(); 
+            tunjukToast("YURAN KELAS DIKEMASKINI");
+        }
+
+        async function tukarStatus(idCloud, val, localId) {
+            if (isFirebaseActive && currentUser) {
+                try {
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('permohonan').doc(idCloud).update({ status: val });
+                } catch(err) {
+                    console.error(err);
+                    tunjukToast("Gagal mengemaskini status permohonan di awan!", "ralat");
+                }
+            } else {
+                let item = permohonanDatabase.find(i => i.id === localId);
+                if (item) {
+                    item.status = val;
+                    localStorage.setItem(KEY_PERMOHONAN, JSON.stringify(permohonanDatabase));
+                    prosesPermohonanAutomatik(); 
+                    prosesKewanganAutomatik();
+                }
+            }
+            tunjukToast("STATUS PERMOHONAN DIKEMASKINI");
+        }
+
+        // -->
+        function prosesKewanganAutomatik() {
             let totalMasuk = 0, totalKeluar = 0;
-            let pibgM = 0, pibgK = 0;
-            let kelasM = 0, kelasK = 0;
+            let pIn = 0, pOut = 0, kIn = 0, kOut = 0;
 
-            senaraiTransaksi.forEach(t => {
-                let val = parseFloat(t.amaun) || 0;
-                if (t.jenis === "MASUK") {
-                    totalMasuk += val;
-                    if (t.dana === "PIBG") pibgM += val;
-                    if (t.dana === "Kelas Tambahan") kelasM += val;
-                } else if (t.jenis === "KELUAR") {
-                    totalKeluar += val;
-                    if (t.dana === "PIBG") pibgK += val;
-                    if (t.dana === "Kelas Tambahan") kelasK += val;
+            database.forEach(i => {
+                if (i.jenis === 'Masuk') {
+                    totalMasuk += i.amaun;
+                    if (i.dana === 'PIBG') pIn += i.amaun; else kIn += i.amaun;
+                } else {
+                    totalKeluar += i.amaun;
+                    if (i.dana === 'PIBG') pOut += i.amaun; else kOut += i.amaun;
                 }
             });
 
-            // Update UI Bank Semasa
-            document.getElementById("txtTotalMasukBank").innerText = "RM " + totalMasuk.toFixed(2);
-            document.getElementById("txtTotalKeluarBank").innerText = "RM " + totalKeluar.toFixed(2);
-            document.getElementById("txtBakiBank").innerText = "RM " + (totalMasuk - totalKeluar).toFixed(2);
+            document.getElementById('txtBakiBank').innerText = `RM ${(totalMasuk - totalKeluar).toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+            document.getElementById('txtTotalMasukBank').innerText = `RM ${totalMasuk.toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+            document.getElementById('txtTotalKeluarBank').innerText = `RM ${totalKeluar.toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
 
-            // Update UI Dana PIBG
-            document.getElementById("pibgMasuk").innerText = "RM " + pibgM.toFixed(2);
-            document.getElementById("pibgKeluar").innerText = "RM " + pibgK.toFixed(2);
-            document.getElementById("pibgBaki").innerText = "RM " + (pibgM - pibgK).toFixed(2);
+            document.getElementById('pibgBaki').innerText = `RM ${(pIn - pOut).toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+            document.getElementById('pibgMasuk').innerText = `RM ${pIn.toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+            document.getElementById('pibgKeluar').innerText = `RM ${pOut.toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
 
-            // Update UI Dana Kelas
-            document.getElementById("kelasMasuk").innerText = "RM " + kelasM.toFixed(2);
-            document.getElementById("kelasKeluar").innerText = "RM " + kelasK.toFixed(2);
-            document.getElementById("kelasBaki").innerText = "RM " + (kelasM - kelasK).toFixed(2);
+            document.getElementById('kelasBaki').innerText = `RM ${(kIn - kOut).toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+            document.getElementById('kelasMasuk').innerText = `RM ${kIn.toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+            document.getElementById('kelasKeluar').innerText = `RM ${kOut.toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+
+            paparJadual();
+            binaCartaAliran();
+            prosesAnggaranBelanjawan(pIn - pOut);
         }
 
-        // 7. PAPAR DATA DALAM JADUAL JADUAL
+        // -->
         function paparJadual() {
-            const filter = document.getElementById("filterDana").value;
-            const tblMasuk = document.getElementById("tblMasuk");
-            const tblKeluar = document.getElementById("tblKeluar");
+            const badanMasuk = document.getElementById('badanJadualMasuk');
+            const badanKeluar = document.getElementById('badanJadualKeluar');
+            const fDana = document.getElementById('filterDana').value;
+            
+            if (!badanMasuk || !badanKeluar) return;
+            badanMasuk.innerHTML = '';
+            badanKeluar.innerHTML = '';
+            
+            let list = database.filter(i => fDana === 'SEMUA' || i.dana === fDana).sort((a,b)=>new Date(a.tarikh)-new Date(b.tarikh));
+            
+            // Papar rekod kosong jika tiada data
+            if (list.length === 0) {
+                badanMasuk.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium">Tiada rekod penerimaan ditemui.</td></tr>`;
+                badanKeluar.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium">Tiada rekod pembayaran ditemui.</td></tr>`;
+                return;
+            }
 
-            tblMasuk.innerHTML = "";
-            tblKeluar.innerHTML = "";
+            let entriesMasuk = 0;
+            let entriesKeluar = 0;
 
-            senaraiTransaksi.forEach(t => {
-                if (filter !== "SEMUA" && t.dana !== filter) return;
+            list.forEach(i => {
+                let badge = `<span class="px-2 py-0.5 rounded text-xs font-bold uppercase ${i.dana==='PIBG'?'bg-blue-100 text-blue-700':'bg-rose-100 text-rose-700'}">${i.dana}</span>`;
+                let tr = document.createElement('tr');
+                tr.className = "text-base hover:bg-slate-50";
+                
+                let idUnik = i.idCloud || i.id;
+                let tindakanBtn = `<td class="p-4 text-center id-tindakan ${modAdmin?'':'hidden'}"><button onclick="padamItem('${idUnik}','kewangan', ${i.id || null})" class="text-rose-500 bg-rose-50 p-1 rounded cursor-pointer"><i class="fa-solid fa-trash-can"></i></button></td>`;
 
-                let row = `
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="p-4 whitespace-nowrap font-medium text-slate-600">${t.tarikh || '-'}</td>
-                        <td class="p-4 font-bold ${t.dana === 'PIBG' ? 'text-blue-600' : 'text-rose-600'}">${t.dana}</td>
-                        <td class="p-4 text-slate-800 font-medium">${t.perincian} <br><span class="text-xs text-slate-400">${t.kategori} ${t.noCek ? '| No.Cek: '+t.noCek : ''}</span></td>
-                        <td class="p-4 text-right font-black ${t.jenis === 'MASUK' ? 'text-emerald-600' : 'text-rose-600'}">RM ${(parseFloat(t.amaun)||0).toFixed(2)}</td>
-                        <td class="p-4 text-center admin-only ${isAdmin ? '' : 'hidden'}">
-                            <button onclick="padamTransaksi('${t.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs bg-rose-50 px-2 py-1 rounded-lg">Padam</button>
-                        </td>
-                    </tr>
-                `;
+                if (i.jenis === 'Masuk') {
+                    tr.innerHTML = `<td class="p-4 text-slate-500 whitespace-nowrap">${i.tarikh}</td><td class="p-4"><div>${badge}</div><span class="font-bold text-slate-900">${i.perincian}</span></td><td class="p-4 text-right font-bold text-emerald-600">RM ${i.amaun.toFixed(2)}</td>${tindakanBtn}`;
+                    badanMasuk.appendChild(tr);
+                    entriesMasuk++;
+                } else {
+                    tr.innerHTML = `<td class="p-4 text-slate-500 whitespace-nowrap">${i.tarikh}</td><td class="p-4"><div>${badge}</div><span class="font-bold text-slate-900">${i.perincian}</span></td><td class="p-4 text-right font-bold text-rose-600">RM ${i.amaun.toFixed(2)}</td>${tindakanBtn}`;
+                    badanKeluar.appendChild(tr);
+                    entriesKeluar++;
+                }
+            });
 
-                if (t.jenis === "MASUK") tblMasuk.innerHTML += row;
-                else if (t.jenis === "KELUAR") tblKeluar.innerHTML += row;
+            if (entriesMasuk === 0) {
+                badanMasuk.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium">Tiada rekod penerimaan untuk penapis ini.</td></tr>`;
+            }
+            if (entriesKeluar === 0) {
+                badanKeluar.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium">Tiada rekod pembayaran untuk penapis ini.</td></tr>`;
+            }
+        }
+
+        function prosesPermohonanAutomatik() {
+            let kuri = {t:0, un:0, s:0, p:0, b:0}, koko = {t:0, un:0, s:0, p:0, b:0}, hem = {t:0, un:0, s:0, p:0, b:0};
+            let total = 0;
+
+            permohonanDatabase.forEach(i => {
+                total += i.amaun;
+                let u = i.unit==='Kurikulum'?kuri:(i.unit==='Kokurikulum'?koko:hem);
+                u.t += i.amaun;
+                if(i.status==='Selesai') u.s++;
+                else {
+                    if(i.status==='Pinda') u.p++; else u.b++;
+                    u.un += i.amaun;
+                }
+            });
+
+            const txtTotalPermohonanUnit = document.getElementById('txtTotalPermohonanUnit');
+            if (txtTotalPermohonanUnit) txtTotalPermohonanUnit.innerText = `RM ${total.toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+            
+            const setUnit = (prefix, obj) => {
+                const totalEl = document.getElementById(`txtTotal${prefix}`);
+                const bakiEl = document.getElementById(`txtBaki${prefix}`);
+                const selesaiEl = document.getElementById(`${prefix.toLowerCase()}SelesaiCount`);
+                const pindaEl = document.getElementById(`${prefix.toLowerCase()}PindaCount`);
+                const belumEl = document.getElementById(`${prefix.toLowerCase()}BelumCount`);
+
+                if (totalEl) totalEl.innerText = `RM ${obj.t.toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+                if (bakiEl) bakiEl.innerText = `RM ${obj.un.toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+                if (selesaiEl) selesaiEl.innerText = obj.s;
+                if (pindaEl) pindaEl.innerText = obj.p;
+                if (belumEl) belumEl.innerText = obj.b;
+            };
+
+            setUnit('Kuri', kuri); setUnit('Koko', koko); setUnit('HEM', hem);
+            paparJadualPermohonan();
+        }
+
+        // -->
+        function paparJadualPermohonan() {
+            const badanJadual = document.getElementById('badanJadualPermohonan');
+            if (!badanJadual) return;
+            const fUnit = document.getElementById('filterUnit').value;
+            const fStat = document.getElementById('filterStatus').value;
+            badanJadual.innerHTML = '';
+            
+            let filtered = permohonanDatabase.filter(i => (fUnit==='SEMUA' || i.unit===fUnit) && (fStat==='SEMUA' || i.status===fStat));
+            
+            if (filtered.length === 0) {
+                badanJadual.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium">Tiada permohonan dana unit setakat ini.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(i => {
+                let tr = document.createElement('tr');
+                tr.className = "text-base hover:bg-slate-50";
+                let badge = `<span class="text-xs font-bold px-2 py-0.5 rounded ${i.unit==='Kurikulum'?'bg-blue-100 text-blue-700':i.unit==='Kokurikulum'?'bg-purple-100 text-purple-700':'bg-teal-100 text-teal-700'}">${i.unit}</span>`;
+                
+                let idUnik = i.idCloud || i.id;
+                let selectStatus = modAdmin 
+                    ? `<select onchange="tukarStatus('${idUnik}', this.value, ${i.id || null})" class="border rounded p-1 font-bold cursor-pointer"><option value="Belum" ${i.status==='Belum'?'selected':''}>Belum</option><option value="Selesai" ${i.status==='Selesai'?'selected':''}>Selesai</option><option value="Pinda" ${i.status==='Pinda'?'selected':''}>Pinda</option></select>`
+                    : `<span class="px-2 py-1 rounded text-xs font-bold ${i.status==='Selesai'?'bg-emerald-100 text-emerald-700':i.status==='Pinda'?'bg-amber-100 text-amber-700':'bg-slate-200 text-slate-600'}">${i.status}</span>`;
+
+                tr.innerHTML = `<td class="p-4 text-slate-500 whitespace-nowrap">${i.tarikh}</td><td class="p-4"><div>${badge}</div><div class="font-bold text-slate-900">${i.projek}</div><div class="text-xs text-slate-400">${i.pemohon}</div></td><td class="p-4 text-right font-bold text-indigo-700">RM ${i.amaun.toFixed(2)}</td><td class="p-4 text-center">${selectStatus}</td><td class="p-4 text-center id-tindakanPermohonan ${modAdmin?'':'hidden'}"><button onclick="padamItem('${idUnik}','permohonan', ${i.id || null})" class="text-rose-500 bg-rose-50 p-1 rounded cursor-pointer"><i class="fa-solid fa-trash-can"></i></button></td>`;
+                badanJadual.appendChild(tr);
             });
         }
 
-        // Mula secara automatik bila dibuka
-        window.onload = function() {
-            // Set tarikh automatik ke tarikh hari ini
-            const today = new Date().toISOString().split('T')[0];
-            if(document.getElementById("tarikhMasuk")) document.getElementById("tarikhMasuk").value = today;
-            if(document.getElementById("tarikhKeluar")) document.getElementById("tarikhKeluar").value = today;
+        function paparAnalisisKutipanKelas() {
+            const badan = document.getElementById('badanAnalisisKutipanKelas');
+            if (!badan) return;
+            badan.innerHTML = '';
+            let tm = 0, ts = 0, tb = 0;
 
-            mulaDengarDataRealtime();
+            Object.keys(muridDatabase).forEach(k => {
+                let obj = muridDatabase[k];
+                let belum = obj.total - obj.selesai;
+                tm += obj.total; ts += obj.selesai; tb += belum;
+
+                let tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 text-base md:text-lg";
+                tr.innerHTML = `<td class="p-4 font-bold">${k}</td><td class="p-4 text-center">${obj.total}</td><td class="p-4 text-center text-emerald-600 font-bold">${obj.selesai}</td><td class="p-4 text-center text-rose-600 font-bold">${belum}</td>`;
+                badan.appendChild(tr);
+            });
+
+            const totalMuridEl = document.getElementById('txtJumlahMuridKeseluruhan');
+            if (totalMuridEl) totalMuridEl.innerText = tm;
+        }
+
+        // -->
+        function prosesAnggaranBelanjawan(bakiPIBG) {
+            let unDisolved = 0;
+            permohonanDatabase.forEach(i => { if(i.status !== 'Selesai') unDisolved += i.amaun; });
+            
+            let totalTolakAnggaran = 0;
+            const container = document.getElementById('senaraiAnggaranDinamik');
+            if (container) {
+                container.innerHTML = '';
+                
+                if (anggaranDatabase.length === 0) {
+                    container.innerHTML = `<p class="text-slate-500 text-sm italic">Tiada komitmen bulanan didaftarkan setakat ini.</p>`;
+                } else {
+                    anggaranDatabase.forEach(item => {
+                        totalTolakAnggaran += item.jumlah;
+                        const div = document.createElement('div');
+                        div.className = "flex justify-between border-b border-slate-800 pb-2 text-base md:text-lg";
+                        
+                        let deleteBtn = '';
+                        let idUnik = item.idCloud || item.id;
+                        if (modAdmin) {
+                            deleteBtn = `<button onclick="padamAnggaran('${idUnik}', ${item.id || null})" class="text-rose-400 hover:text-rose-600 bg-rose-50/10 p-1.5 rounded ml-2 cursor-pointer"><i class="fa-solid fa-trash-can text-sm"></i></button>`;
+                        }
+
+                        div.innerHTML = `
+                            <span class="text-slate-400">${item.nama} <span class="text-xs text-slate-500 font-bold block md:inline md:ml-2">(RM ${item.kadar.toFixed(2)} × ${item.bulan} Bulan)</span></span>
+                            <span class="font-bold text-rose-400">- RM ${item.jumlah.toLocaleString('en-MY', {minimumFractionDigits: 2})} ${deleteBtn}</span>
+                        `;
+                        container.appendChild(div);
+                    });
+                }
+            }
+
+            let bakiAkhir = bakiPIBG - unDisolved - totalTolakAnggaran;
+
+            const bakiPibgEl = document.getElementById('txtAnggaranBakiPIBG');
+            const tolakPermohonanEl = document.getElementById('txtAnggaranTolakPermohonan');
+            const bakiTinggalEl = document.getElementById('txtAnggaranBakiTinggal');
+
+            if (bakiPibgEl) bakiPibgEl.innerText = `RM ${bakiPIBG.toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+            if (tolakPermohonanEl) tolakPermohonanEl.innerText = `- RM ${unDisolved.toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+            if (bakiTinggalEl) {
+                bakiTinggalEl.innerText = `RM ${bakiAkhir.toLocaleString('en-MY', {minimumFractionDigits: 2})}`;
+                if (bakiAkhir < 0) {
+                    bakiTinggalEl.className = "text-3xl md:text-5xl font-black text-rose-500 mt-2";
+                } else {
+                    bakiTinggalEl.className = "text-3xl md:text-5xl font-black text-emerald-400 mt-2";
+                }
+            }
+        }
+
+        // -->
+        function binaCartaAliran() {
+            let pibgBulanan = Array(12).fill(0), kelasBulanan = Array(12).fill(0);
+            database.forEach(i => {
+                let m = new Date(i.tarikh).getMonth();
+                let amt = i.jenis === 'Masuk' ? i.amaun : -i.amaun;
+                if(i.dana==='PIBG') pibgBulanan[m]+=amt; else kelasBulanan[m]+=amt;
+            });
+
+            const canvasLine = document.getElementById('chartKewanganDuaDana');
+            if (canvasLine) {
+                if(cartaKewanganInstance) cartaKewanganInstance.destroy();
+                cartaKewanganInstance = new Chart(canvasLine.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'],
+                        datasets: [
+                            { label: 'PIBG', data: pibgBulanan, borderColor: '#2563eb', tension: 0.3, fill: false },
+                            { label: 'Kelas Tambahan', data: kelasBulanan, borderColor: '#e11d48', tension: 0.3, fill: false }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            let labelsClasses = Object.keys(muridDatabase);
+            let selesaiData = labelsClasses.map(k => muridDatabase[k].selesai);
+            let belumData = labelsClasses.map(k => muridDatabase[k].total - muridDatabase[k].selesai);
+
+            const canvasBar = document.getElementById('chartKewanganKelas');
+            if (canvasBar) {
+                if(cartaKewanganKelasInstance) cartaKewanganKelasInstance.destroy();
+                cartaKewanganKelasInstance = new Chart(canvasBar.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: labelsClasses.map(k => k.split(' ')[0] + k.split(' ')[1][0]),
+                        datasets: [
+                            { label: 'Selesai', data: selesaiData, backgroundColor: '#10b981' },
+                            { label: 'Belum', data: belumData, backgroundColor: '#ef4444' }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        }
+
+        function tutupModalPengesahan() {
+            document.getElementById('modalPengesahan').classList.add('hidden');
+        }
+
+        async function padamItem(idCloud, jenis, localId) {
+            idRekodMahuDipadam = idCloud; 
+            jenisPadam = jenis;
+            const modal = document.getElementById('modalPengesahan');
+            if (modal) modal.classList.remove('hidden');
+            
+            const btnSahkan = document.getElementById('btnSahkanPadam');
+            if (btnSahkan) {
+                btnSahkan.onclick = async function() {
+                    if (jenisPadam === 'kewangan') {
+                        if (isFirebaseActive && currentUser) {
+                            try {
+                                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('transaksi').doc(idRekodMahuDipadam).delete();
+                            } catch(err) {
+                                console.error(err);
+                                tunjukToast("Gagal memadam transaksi di awan!", "ralat");
+                            }
+                        } else {
+                            database = database.filter(i => i.id !== localId);
+                            localStorage.setItem(KEY_TRANSAKSI, JSON.stringify(database));
+                            prosesKewanganAutomatik();
+                        }
+                    } else {
+                        if (isFirebaseActive && currentUser) {
+                            try {
+                                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('permohonan').doc(idRekodMahuDipadam).delete();
+                            } catch(err) {
+                                console.error(err);
+                                tunjukToast("Gagal memadam permohonan di awan!", "ralat");
+                            }
+                        } else {
+                            permohonanDatabase = permohonanDatabase.filter(i => i.id !== localId);
+                            localStorage.setItem(KEY_PERMOHONAN, JSON.stringify(permohonanDatabase));
+                            prosesPermohonanAutomatik();
+                        }
+                    }
+                    tutupModalPengesahan();
+                    tunjukToast("REKOD DIPADAM");
+                };
+            }
+        }
+
+        // -->
+        async function bukaModalPengesahanReset() {
+            document.getElementById('txtSahkanPadamTajuk').innerText = "SET SEMULA SISTEM (KOSONG)";
+            document.getElementById('txtSahkanPadamKeterangan').innerText = "Adakah anda pasti mahu memadam semua data dan mengeset semula sistem ini ke baki sifar (RM 0.00)?";
+            
+            const modal = document.getElementById('modalPengesahan');
+            if (modal) modal.classList.remove('hidden');
+            
+            const btnSahkan = document.getElementById('btnSahkanPadam');
+            if (btnSahkan) {
+                btnSahkan.onclick = async function() {
+                    tutupModalPengesahan();
+                    tunjukToast("SEDANG MEMADAM DATA...", "info");
+                    
+                    try {
+                        if (isFirebaseActive && currentUser) {
+                            const snapTransaksi = await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('transaksi').get();
+                            for (const d of snapTransaksi.docs) {
+                                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('transaksi').doc(d.id).delete();
+                            }
+                            
+                            const snapPermohonan = await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('permohonan').get();
+                            for (const d of snapPermohonan.docs) {
+                                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('permohonan').doc(d.id).delete();
+                            }
+                            
+                            const snapAnggaran = await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('anggaran').get();
+                            for (const d of snapAnggaran.docs) {
+                                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('anggaran').doc(d.id).delete();
+                            }
+                            
+                            const docRefMurid = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('murid_kelas').doc('data_murid');
+                            await docRefMurid.set(defaultMuridDatabase);
+                            
+                            tunjukToast("DATA AWAN BERJAYA DISIFARKAN!");
+                        } else {
+                            // Kosongkan storan tempatan menggunakan kunci baharu
+                            localStorage.setItem(KEY_TRANSAKSI, JSON.stringify([]));
+                            localStorage.setItem(KEY_PERMOHONAN, JSON.stringify([]));
+                            localStorage.setItem(KEY_MURID, JSON.stringify(defaultMuridDatabase));
+                            localStorage.setItem(KEY_ANGGARAN, JSON.stringify([]));
+                            functionFallbackLocal();
+                            tunjukToast("DATA TEMPATAN DISIFARKAN!");
+                        }
+                    } catch (err) {
+                        console.error("Format ralat:", err);
+                        tunjukToast("Format gagal. Sila cuba lagi.", "ralat");
+                    }
+                };
+            }
+        }
+
+        // --- SISTEM MEMUAT NAIK DATA ASAL DARI CSV ---
+        async function imporDariCSV() {
+            const input = document.getElementById('inputCSV');
+            if (!input.files || input.files.length === 0) {
+                tunjukToast("Sila pilih fail CSV terlebih dahulu!", "ralat");
+                return;
+            }
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const text = e.target.result;
+                const lines = text.split("\n");
+                if (lines.length <= 1) {
+                    tunjukToast("Fail CSV kosong atau tidak sah!", "ralat");
+                    return;
+                }
+                
+                tunjukToast("Sedang menyinkronkan data...", "info");
+                let parsedCount = 0;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (parts.length < 7) continue;
+                    
+                    const tarikh = parts[0].replace(/"/g, '');
+                    const dana = parts[1].replace(/"/g, '');
+                    const jenis = parts[2].replace(/"/g, '');
+                    const kelas = parts[3].replace(/"/g, '');
+                    const kategori = parts[4].replace(/"/g, '');
+                    const perincian = parts[5].replace(/"/g, '');
+                    const amaun = parseFloat(parts[6].replace(/"/g, ''));
+                    
+                    if (isNaN(amaun)) continue;
+                    
+                    const rekod = {
+                        tarikh: tarikh,
+                        dana: dana,
+                        jenis: jenis,
+                        kelas: kelas || 'Umum',
+                        kategori: kategori,
+                        perincian: perincian,
+                        amaun: amaun,
+                        dibuatPada: Date.now()
+                    };
+                    
+                    if (isFirebaseActive && currentUser) {
+                        await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('transaksi').add(rekod);
+                    } else {
+                        rekod.id = Date.now() + i;
+                        database.push(rekod);
+                    }
+                    parsedCount++;
+                }
+                
+                if (!isFirebaseActive) {
+                    simpanStorage();
+                }
+                
+                tunjukToast(`${parsedCount} rekod berjaya diimpor!`);
+                input.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function eksportCSV() {
+            if(!database.length) { tunjukToast("TIADA DATA!"); return; }
+            let r = [["Tarikh", "Dana", "Jenis Transaksi", "Kelas", "Kategori", "Perincian", "Amaun (RM)"]];
+            database.forEach(i => r.push([i.tarikh, i.dana, i.jenis, i.kelas || 'Umum', i.kategori, `"${i.perincian}"`, i.amaun]));
+            let csv = "data:text/csv;charset=utf-8," + r.map(e => e.join(",")).join("\n");
+            let link = document.createElement("a"); link.setAttribute("href", encodeURI(csv)); link.setAttribute("download", "Laporan_Kewangan_ST_ANNES.csv"); link.click();
+        }
+
+        function eksportPermohonanCSV() {
+            if(!permohonanDatabase.length) { tunjukToast("TIADA DATA!"); return; }
+            let r = [["Tarikh", "Unit", "Pemohon", "Aktiviti/Projek", "Amaun (RM)", "Status"]];
+            permohonanDatabase.forEach(i => r.push([i.tarikh, i.unit, `"${i.pemohon}"`, `"${i.projek}"`, i.amaun, i.status]));
+            let csv = "data:text/csv;charset=utf-8," + r.map(e => e.join(",")).join("\n");
+            let link = document.createElement("a"); link.setAttribute("href", encodeURI(csv)); link.setAttribute("download", "Laporan_Permohonan_ST_ANNES.csv"); link.click();
+        }
+
+        // Pendedahan Fungsi Global ke Object Window
+        window.tutupModalLaluan = tutupModalLaluan;
+        window.sahkanKataLaluan = sahkanKataLaluan;
+        window.padamAnggaran = padamAnggaran;
+        window.padamItem = padamItem;
+        window.tutupModalPengesahan = tutupModalPengesahan;
+        window.bukaModalPengesahanReset = bukaModalPengesahanReset;
+        window.eksportCSV = eksportCSV;
+        window.eksportPermohonanCSV = eksportPermohonanCSV;
+        window.paparJadual = paparJadual;
+        window.paparJadualPermohonan = paparJadualPermohonan;
+        window.tukarStatus = tukarStatus;
+
+        // --- BINDING EVENT LISTENERS ---
+        const initBorangEvents = () => {
+            const fDuitMasuk = document.getElementById('formDuitMasuk');
+            if (fDuitMasuk) fDuitMasuk.addEventListener('submit', simpanDuitMasuk);
+
+            const fDuitKeluar = document.getElementById('formDuitKeluar');
+            if (fDuitKeluar) fDuitKeluar.addEventListener('submit', simpanDuitKeluar);
+
+            const fStatusYuran = document.getElementById('formStatusYuran');
+            if (fStatusYuran) fStatusYuran.addEventListener('submit', simpanBilanganMurid);
+
+            const fPermohonan = document.getElementById('formPermohonanDana');
+            if (fPermohonan) fPermohonan.addEventListener('submit', simpanPermohonan);
+
+            const fAnggaran = document.getElementById('formAnggaranBelanjawan');
+            if (fAnggaran) fAnggaran.addEventListener('submit', simpanAnggaranBelanjawan);
+
+            const bImporCSV = document.getElementById('btnImporCSV');
+            if (bImporCSV) bImporCSV.addEventListener('click', imporDariCSV);
         };
+
+        // Mulakan storan tempatan yang bersih
+        if (!firebaseConfig) {
+            // Pembersihan paksa sisa memori kunci lama jika masih ada untuk mengelakkan ralat paparan
+            localStorage.removeItem('st_annes_pibg_db_v2');
+            localStorage.removeItem('st_annes_pibg_permohonan_db');
+            localStorage.removeItem('st_annes_pibg_anggaran_v2');
+            
+            functionFallbackLocal();
+        }
+
+        function mulakanSistemPenuh() {
+            initBorangEvents();
+            if (!isFirebaseActive) {
+                prosesKewanganAutomatik();
+                prosesPermohonanAutomatik();
+                paparAnalisisKutipanKelas();
+            }
+        }
+
+        if (document.readyState === "complete" || document.readyState === "interactive") {
+            mulakanSistemPenuh();
+        } else {
+            window.addEventListener("load", mulakanSistemPenuh);
+        }
+
     </script>
+    <script>
+  // Gantikan link di bawah dengan Web App URL dari Google Apps Script anda
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/PASTE_WEB_APP_URL_DI_SINI/exec";
+
+  // 1. FUNGSI AMBIL DATA AUTOMATIK (Bila AJK Buka Link di HP)
+  function muatTurunDataLive() {
+    fetch(GOOGLE_SCRIPT_URL)
+      .then(response => response.json())
+      .then(data => {
+        if (data && Object.keys(data).length > 0) {
+          // Kemaskini memori tempatan browser
+          localStorage.setItem('DATA_YURAN_2026', JSON.stringify(data));
+          // Muat semula paparan atau jalankan fungsi render asal web
+          if (typeof renderData === 'function') renderData();
+          else location.reload();
+        }
+      })
+      .catch(error => console.error("Gagal muat turun data:", error));
+  }
+
+  // 2. FUNGSI SIMPAN DATA (Bila Bendahari Tambah/Kemaskini Data)
+  function simpanDataKeLive(dataYuran) {
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(dataYuran)
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log("Data berjaya disimpan ke Google Sheet!");
+    })
+    .catch(error => console.error("Gagal simpan data:", error));
+  }
+
+  // Ambil data automatik sebaik sahaja halaman web selesai dimuatkan
+  window.addEventListener('DOMContentLoaded', () => {
+    muatTurunDataLive();
+  });
+</script>
+<!-- KOD KHAS LIVE AUTOMATIK UNTUK AJK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+  // Sambungan terus ke Database Awan Khas
+  if (!firebase.apps.length) {
+    firebase.initializeApp({
+      databaseURL: "https://pibg-stannes-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    });
+  }
+  const dbAwan = firebase.database().ref('YURAN_ST_ANNES_2026');
+
+  // 1. BILA AJK BUKA LINK DI HP: Auto tarik data dari awan terus ke skrin HP diorang
+  dbAwan.on('value', (snapshot) => {
+    const dataTerbaru = snapshot.val();
+    if (dataTerbaru) {
+      const dataTempatan = localStorage.getItem('YURAN_ST_ANNES_2026');
+      if (JSON.stringify(dataTerbaru) !== dataTempatan) {
+        localStorage.setItem('YURAN_ST_ANNES_2026', JSON.stringify(dataTerbaru));
+        // Refresh automatik sekali sahaja supaya data terus terpapar di HP AJK
+        if (!sessionStorage.getItem('sudah_load')) {
+          sessionStorage.setItem('sudah_load', 'true');
+          location.reload();
+        }
+      }
+    }
+  });
+
+  // 2. BILA ANDA (BENDAHARI) MASUK/UBAH DATA: Auto hantar data naik ke awan
+  const simpanAsal = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    simpanAsal.apply(this, arguments);
+    if (key === 'YURAN_ST_ANNES_2026') {
+      try {
+        dbAwan.set(JSON.parse(value));
+      } catch(e) {}
+    }
+  };
+</script>   
 </body>
 </html>
