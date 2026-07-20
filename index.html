@@ -1440,45 +1440,22 @@
     muatTurunDataLive();
   });
 </script>
-<!-- KOD KHAS LIVE AUTOMATIK UNTUK AJK -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-<script>
-  // Sambungan terus ke Database Awan Khas
-  if (!firebase.apps.length) {
-    firebase.initializeApp({
-      databaseURL: "https://pibg-stannes-default-rtdb.asia-southeast1.firebasedatabase.app/"
-    });
-  }
-  const dbAwan = firebase.database().ref('YURAN_ST_ANNES_2026');
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyD1qUSD8bJU7QAaQYfs6zngKQfSC5XI59Q",
+  authDomain: "bendahari-pibg.firebaseapp.com",
+  projectId: "bendahari-pibg",
+  storageBucket: "bendahari-pibg.firebasestorage.app",
+  messagingSenderId: "780920877564",
+  appId: "1:780920877564:web:f3cf19f4158d8aea5e4279"
+};
 
-  // 1. BILA AJK BUKA LINK DI HP: Auto tarik data dari awan terus ke skrin HP diorang
-  dbAwan.on('value', (snapshot) => {
-    const dataTerbaru = snapshot.val();
-    if (dataTerbaru) {
-      const dataTempatan = localStorage.getItem('YURAN_ST_ANNES_2026');
-      if (JSON.stringify(dataTerbaru) !== dataTempatan) {
-        localStorage.setItem('YURAN_ST_ANNES_2026', JSON.stringify(dataTerbaru));
-        // Refresh automatik sekali sahaja supaya data terus terpapar di HP AJK
-        if (!sessionStorage.getItem('sudah_load')) {
-          sessionStorage.setItem('sudah_load', 'true');
-          location.reload();
-        }
-      }
-    }
-  });
-
-  // 2. BILA ANDA (BENDAHARI) MASUK/UBAH DATA: Auto hantar data naik ke awan
-  const simpanAsal = localStorage.setItem;
-  localStorage.setItem = function(key, value) {
-    simpanAsal.apply(this, arguments);
-    if (key === 'YURAN_ST_ANNES_2026') {
-      try {
-        dbAwan.set(JSON.parse(value));
-      } catch(e) {}
-    }
-  };
-</script>   
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 </body>
 </html>
