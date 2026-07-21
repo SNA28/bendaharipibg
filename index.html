@@ -230,8 +230,8 @@
 
         // 3. FUNGSI UNTUK MENDAPATKAN DATA MASA NYATA (REALTIME) DENGAN ONSNAPSHOT
         function initRealTimeData() {
-            // Kita sentiasa mendengar perubahan di koleksi "transaksi"
-            db.collection("transaksi").orderBy("tarikh", "desc").onSnapshot((snapshot) => {
+            // PERUBAHAN DI SINI: Tukar "transaksi" kepada "kewangan"
+            db.collection("kewangan").onSnapshot((snapshot) => {
                 let totalMasuk = 0;
                 let totalKeluar = 0;
                 
@@ -250,31 +250,37 @@
                     let data = doc.data();
                     let amaun = parseFloat(data.amaun) || 0;
                     
+                    // PERUBAHAN DI SINI: Menyeragamkan ejaan huruf kecil/besar untuk baca data lama
+                    let jenisData = (data.jenis || "").toLowerCase();
+                    let danaData = data.dana || "PIBG"; 
+                    let tarikhData = data.tarikh || data.tarikhMasuk || data.tarikhKeluar || "-";
+                    let perincianData = data.perincian || data.perincianMasuk || data.perincianKeluar || "-";
+                    
                     // Bina Baris Jadual
                     let row = document.createElement("tr");
                     row.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors";
                     
-                    let selMasuk = data.jenis === "masuk" ? `<span class="font-bold text-emerald-600">${amaun.toFixed(2)}</span>` : "-";
-                    let selKeluar = data.jenis === "keluar" ? `<span class="font-bold text-rose-600">${amaun.toFixed(2)}</span>` : "-";
+                    let selMasuk = jenisData === "masuk" ? `<span class="font-bold text-emerald-600">${amaun.toFixed(2)}</span>` : "-";
+                    let selKeluar = jenisData === "keluar" ? `<span class="font-bold text-rose-600">${amaun.toFixed(2)}</span>` : "-";
 
                     row.innerHTML = `
-                        <td class="px-4 py-3">${data.tarikh || "-"}</td>
-                        <td class="px-4 py-3 font-medium text-slate-700">${data.perincian || "-"}</td>
-                        <td class="px-4 py-3"><span class="bg-slate-200 px-2 py-1 rounded text-xs font-bold">${data.dana || "-"}</span></td>
+                        <td class="px-4 py-3">${tarikhData}</td>
+                        <td class="px-4 py-3 font-medium text-slate-700">${perincianData}</td>
+                        <td class="px-4 py-3"><span class="bg-slate-200 px-2 py-1 rounded text-xs font-bold">${danaData}</span></td>
                         <td class="px-4 py-3">${selMasuk}</td>
                         <td class="px-4 py-3">${selKeluar}</td>
                     `;
                     tbody.appendChild(row);
 
                     // Pengiraan Jumlah Keseluruhan
-                    if (data.jenis === "masuk") {
+                    if (jenisData === "masuk") {
                         totalMasuk += amaun;
-                        if(data.dana === "PIBG") pibgMasuk += amaun;
-                        if(data.dana === "Kelas Tambahan") kelasMasuk += amaun;
-                    } else if (data.jenis === "keluar") {
+                        if(danaData === "PIBG") pibgMasuk += amaun;
+                        if(danaData === "Kelas Tambahan") kelasMasuk += amaun;
+                    } else if (jenisData === "keluar") {
                         totalKeluar += amaun;
-                        if(data.dana === "PIBG") pibgKeluar += amaun;
-                        if(data.dana === "Kelas Tambahan") kelasKeluar += amaun;
+                        if(danaData === "PIBG") pibgKeluar += amaun;
+                        if(danaData === "Kelas Tambahan") kelasKeluar += amaun;
                     }
                 });
 
@@ -297,16 +303,16 @@
                 document.getElementById("kelasBaki").innerText = "RM " + kelasBaki.toFixed(2);
 
             }, (error) => {
-                // INI AKAN KELUAR DI TELEFON JIKA GAGAL LOAD
                 console.error("Ralat Firebase:", error);
-                alert("Pangkalan data belum dibenarkan (Permission Denied) atau tiada sambungan internet. Ralat: " + error.message);
+                alert("Ralat mengakses data: " + error.message);
             });
         }
 
         // 4. FUNGSI TAMBAH DATA MASUK
         document.getElementById("formDuitMasuk").addEventListener("submit", function(e) {
             e.preventDefault();
-            db.collection("transaksi").add({
+            // PERUBAHAN DI SINI: Simpan ke koleksi "kewangan"
+            db.collection("kewangan").add({
                 tarikh: document.getElementById("tarikhMasuk").value,
                 perincian: document.getElementById("perincianMasuk").value,
                 dana: document.getElementById("pembahagianMasuk").value,
@@ -324,7 +330,8 @@
         // 5. FUNGSI TAMBAH DATA KELUAR
         document.getElementById("formDuitKeluar").addEventListener("submit", function(e) {
             e.preventDefault();
-            db.collection("transaksi").add({
+            // PERUBAHAN DI SINI: Simpan ke koleksi "kewangan"
+            db.collection("kewangan").add({
                 tarikh: document.getElementById("tarikhKeluar").value,
                 perincian: document.getElementById("perincianKeluar").value,
                 dana: document.getElementById("pembahagianKeluar").value,
