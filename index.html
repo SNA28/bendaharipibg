@@ -199,20 +199,22 @@
                             </tr>
                         </thead>
                         <tbody id="jadualTransaksi">
-                            <!-- Data akan dimuatkan dari Firebase ke sini -->
                             <tr><td colspan="5" class="text-center py-4 text-slate-400">Sedang memuat turun data...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </section>
+
+        <!-- PANEL PENGESANAN (DEBUG BOX) -->
+        <section class="mt-6 bg-slate-900 text-slate-200 p-6 rounded-3xl border border-slate-800 text-xs font-mono">
+            <h4 class="text-yellow-400 font-bold uppercase mb-2"><i class="fa-solid fa-bug mr-2"></i> Status Sambungan Pangkalan Data (Debug Panel)</h4>
+            <div id="debugBox" class="space-y-1">Sedang menyemak sambungan ke Firebase...</div>
+        </section>
     </main>
 
-    <!-- SKRIP FIREBASE REALTIME DENGAN KOD ANDA -->
+    <!-- SKRIP FIREBASE REALTIME DENGAN DEBUGGER -->
     <script>
-        // =========================================================================
-        // 1. KONFIGURASI FIREBASE ANDA
-        // =========================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyD1qUSD8bJU7QAaQYfs6zngKQfSC5XI59Q",
             authDomain: "bendahari-pibg.firebaseapp.com",
@@ -222,46 +224,52 @@
             appId: "1:780920877564:web:f3cf19f4158d8aea5e4279"
         };
 
-        // 2. MENGINISIALISASI FIREBASE
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.firestore();
 
-        // 3. FUNGSI UNTUK MENDAPATKAN DATA MASA NYATA (REALTIME) DENGAN ONSNAPSHOT
         function initRealTimeData() {
-            // PERUBAHAN DI SINI: Tukar "transaksi" kepada "kewangan"
+            const debugBox = document.getElementById("debugBox");
+
             db.collection("kewangan").onSnapshot((snapshot) => {
-                let totalMasuk = 0;
-                let totalKeluar = 0;
-                
+                // KEMASKINI PANEL DEBUG
+                if (snapshot.empty) {
+                    debugBox.innerHTML = `<p class="text-amber-400 font-bold">⚠️ Firebase Berjaya Bersambung, TETAPI koleksi 'kewangan' masih KOSONG (0 Rekod).</p>
+                    <p class="text-slate-400 mt-1">Sila isi borang "Rekod Wang Masuk" di atas untuk menambah data ujian pertama anda.</p>`;
+                } else {
+                    let sampleDoc = snapshot.docs[0].data();
+                    debugBox.innerHTML = `<p class="text-emerald-400 font-bold">✅ Berjaya jumpa ${snapshot.size} rekod dalam koleksi 'kewangan'!</p>
+                    <p class="text-slate-300 mt-1">Contoh data sebenar dari Firebase anda:</p>
+                    <pre class="bg-slate-800 p-2 rounded text-emerald-300 overflow-x-auto mt-1">${JSON.stringify(sampleDoc, null, 2)}</pre>`;
+                }
+
+                let totalMasuk = 0, totalKeluar = 0;
                 let pibgMasuk = 0, pibgKeluar = 0;
                 let kelasMasuk = 0, kelasKeluar = 0;
                 
                 let tbody = document.getElementById("jadualTransaksi");
-                tbody.innerHTML = ""; // Bersihkan jadual
+                tbody.innerHTML = "";
 
                 if(snapshot.empty) {
                     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-400">Tiada rekod transaksi dijumpai.</td></tr>';
                 }
 
-                // Pengiraan Data
                 snapshot.forEach((doc) => {
                     let data = doc.data();
-                    let amaun = parseFloat(data.amaun) || 0;
                     
-                    // PERUBAHAN DI SINI: Menyeragamkan ejaan huruf kecil/besar untuk baca data lama
-                    let jenisData = (data.jenis || "").toLowerCase();
-                    let danaData = data.dana || "PIBG"; 
+                    // Fleksibel membaca sebarang ejaan medan (Amaun / Jumlah / Value)
+                    let amaun = parseFloat(data.amaun || data.jumlah || data.nilai || data.rm || 0);
+                    let jenisData = String(data.jenis || data.type || "").toLowerCase();
+                    let danaData = data.dana || data.kategori || "PIBG"; 
                     let tarikhData = data.tarikh || data.tarikhMasuk || data.tarikhKeluar || "-";
-                    let perincianData = data.perincian || data.perincianMasuk || data.perincianKeluar || "-";
+                    let perincianData = data.perincian || data.perincianMasuk || data.perincianKeluar || data.keterangan || "-";
                     
-                    // Bina Baris Jadual
                     let row = document.createElement("tr");
                     row.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors";
                     
-                    let selMasuk = jenisData === "masuk" ? `<span class="font-bold text-emerald-600">${amaun.toFixed(2)}</span>` : "-";
-                    let selKeluar = jenisData === "keluar" ? `<span class="font-bold text-rose-600">${amaun.toFixed(2)}</span>` : "-";
+                    let selMasuk = (jenisData === "masuk" || jenisData === "in") ? `<span class="font-bold text-emerald-600">${amaun.toFixed(2)}</span>` : "-";
+                    let selKeluar = (jenisData === "keluar" || jenisData === "out") ? `<span class="font-bold text-rose-600">${amaun.toFixed(2)}</span>` : "-";
 
                     row.innerHTML = `
                         <td class="px-4 py-3">${tarikhData}</td>
@@ -272,31 +280,27 @@
                     `;
                     tbody.appendChild(row);
 
-                    // Pengiraan Jumlah Keseluruhan
-                    if (jenisData === "masuk") {
+                    if (jenisData === "masuk" || jenisData === "in") {
                         totalMasuk += amaun;
                         if(danaData === "PIBG") pibgMasuk += amaun;
                         if(danaData === "Kelas Tambahan") kelasMasuk += amaun;
-                    } else if (jenisData === "keluar") {
+                    } else if (jenisData === "keluar" || jenisData === "out") {
                         totalKeluar += amaun;
                         if(danaData === "PIBG") pibgKeluar += amaun;
                         if(danaData === "Kelas Tambahan") kelasKeluar += amaun;
                     }
                 });
 
-                // KEMASKINI UI (DASHBOARD KAD UTAMA)
                 let bakiSemasa = totalMasuk - totalKeluar;
                 document.getElementById("txtTotalMasukBank").innerText = "RM " + totalMasuk.toFixed(2);
                 document.getElementById("txtTotalKeluarBank").innerText = "RM " + totalKeluar.toFixed(2);
                 document.getElementById("txtBakiBank").innerText = "RM " + bakiSemasa.toFixed(2);
 
-                // KEMASKINI UI (SUB-DANA PIBG)
                 let pibgBaki = pibgMasuk - pibgKeluar;
                 document.getElementById("pibgMasuk").innerText = "RM " + pibgMasuk.toFixed(2);
                 document.getElementById("pibgKeluar").innerText = "RM " + pibgKeluar.toFixed(2);
                 document.getElementById("pibgBaki").innerText = "RM " + pibgBaki.toFixed(2);
 
-                // KEMASKINI UI (SUB-DANA KELAS)
                 let kelasBaki = kelasMasuk - kelasKeluar;
                 document.getElementById("kelasMasuk").innerText = "RM " + kelasMasuk.toFixed(2);
                 document.getElementById("kelasKeluar").innerText = "RM " + kelasKeluar.toFixed(2);
@@ -304,14 +308,13 @@
 
             }, (error) => {
                 console.error("Ralat Firebase:", error);
-                alert("Ralat mengakses data: " + error.message);
+                debugBox.innerHTML = `<p class="text-rose-400 font-bold">❌ Gagal menyambung ke Firebase: ${error.message}</p>`;
             });
         }
 
-        // 4. FUNGSI TAMBAH DATA MASUK
+        // FUNGSI SIMPAN DATA MASUK
         document.getElementById("formDuitMasuk").addEventListener("submit", function(e) {
             e.preventDefault();
-            // PERUBAHAN DI SINI: Simpan ke koleksi "kewangan"
             db.collection("kewangan").add({
                 tarikh: document.getElementById("tarikhMasuk").value,
                 perincian: document.getElementById("perincianMasuk").value,
@@ -327,10 +330,9 @@
             });
         });
 
-        // 5. FUNGSI TAMBAH DATA KELUAR
+        // FUNGSI SIMPAN DATA KELUAR
         document.getElementById("formDuitKeluar").addEventListener("submit", function(e) {
             e.preventDefault();
-            // PERUBAHAN DI SINI: Simpan ke koleksi "kewangan"
             db.collection("kewangan").add({
                 tarikh: document.getElementById("tarikhKeluar").value,
                 perincian: document.getElementById("perincianKeluar").value,
@@ -346,12 +348,10 @@
             });
         });
 
-        // Jalankan fungsi realtime sebaik sahaja page siap load
         window.onload = function() {
             initRealTimeData();
         };
 
-        // Fungsi Admin Dummy
         function bukaModalLaluan() {
             alert("Sistem Log Masuk Admin akan datang.");
         }
