@@ -1,339 +1,62 @@
-<!DOCTYPE html>
-<html lang="ms">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard e-PIBG SK St. Anne's Convent</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- SDK Firebase Compat (UMD) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Fredoka', sans-serif;
-            background-color: #f1f5f9;
-            font-size: 16px;
+muatTurunDataLive();
+});
+</script>
+<!-- KOD KHAS LIVE AUTOMATIK UNTUK AJK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+  // Sambungan terus ke Database Awan Khas
+  if (!firebase.apps.length) {
+    firebase.initializeApp({
+      databaseURL: "https://pibg-stannes-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    });
+  }
+  const dbAwan = firebase.database().ref('YURAN_ST_ANNES_2026');
+
+  // 1. BILA AJK BUKA LINK DI HP: Auto tarik data dari awan terus ke skrin HP diorang
+  dbAwan.on('value', (snapshot) => {
+    const dataTerbaru = snapshot.val();
+    if (dataTerbaru) {
+      const dataTempatan = localStorage.getItem('YURAN_ST_ANNES_2026');
+      if (JSON.stringify(dataTerbaru) !== dataTempatan) {
+        localStorage.setItem('YURAN_ST_ANNES_2026', JSON.stringify(dataTerbaru));
+        // Refresh automatik sekali sahaja supaya data terus terpapar di HP AJK
+        if (!sessionStorage.getItem('sudah_load')) {
+          sessionStorage.setItem('sudah_load', 'true');
+          location.reload();
         }
+      }
+    }
+  });
 
-        .gradient-navy {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        }
+  // 2. BILA ANDA (BENDAHARI) MASUK/UBAH DATA: Auto hantar data naik ke awan
+  const simpanAsal = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    simpanAsal.apply(this, arguments);
+    if (key === 'YURAN_ST_ANNES_2026') {
+      try {
+        dbAwan.set(JSON.parse(value));
+      } catch(e) {}
+    }
+  };
+</script>   
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(10px);
-        }
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyD1qUSD8bJU7QAaQYfs6zngKQfSC5XI59Q",
+  authDomain: "bendahari-pibg.firebaseapp.com",
+  projectId: "bendahari-pibg",
+  storageBucket: "bendahari-pibg.firebasestorage.app",
+  messagingSenderId: "780920877564",
+  appId: "1:780920877564:web:f3cf19f4158d8aea5e4279"
+};
 
-        ::-webkit-scrollbar { width: 10px; height: 12px; }
-        ::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    </style>
-</head>
-<body class="antialiased text-slate-800 pb-20">
-
-    <!-- HEADER -->
-    <header class="gradient-navy text-white shadow-2xl sticky top-0 z-50">
-        <div class="max-w-[1600px] mx-auto px-8 py-6">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div class="text-center md:text-left">
-                    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-yellow-400 uppercase">
-                        Pengurusan Kewangan PIBG
-                    </h1>
-                    <p class="text-lg md:text-xl font-medium text-blue-200 uppercase tracking-widest mt-1">
-                        SK St. Anne's Convent <span class="ml-2 bg-emerald-500/20 text-emerald-400 text-xs font-extrabold px-2.5 py-1 rounded-full uppercase tracking-normal border border-emerald-400/30"><i class="fa-solid fa-cloud mr-1"></i> Awan Aktif (Live)</span>
-                    </p>
-                </div>
-                <div class="flex items-center gap-4 shrink-0">
-                    <button id="btnToggleMode" onclick="bukaModalLaluan()" class="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold text-base px-8 py-3 rounded-2xl transition-all shadow-xl flex items-center gap-2 cursor-pointer border border-yellow-300">
-                        <i class="fa-solid fa-lock text-base"></i> MOD ADMIN
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <main class="max-w-[1600px] mx-auto px-8 mt-10 space-y-10">
-
-        <!-- KAD UTAMA AKAUN BANK & DANA -->
-        <section class="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            <!-- KAD AKAUN BANK -->
-            <div class="xl:col-span-4 lg:col-span-12 gradient-navy rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden flex flex-col justify-center min-h-[300px]">
-                <div class="absolute -right-10 -top-10 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
-                <div class="relative z-10 text-center md:text-left">
-                    <span class="bg-white/10 text-blue-200 text-xs font-bold px-4 py-2 rounded-full border border-white/10 tracking-widest uppercase">
-                        Akaun Bank Semasa
-                    </span>
-                    <h2 class="text-sm font-medium text-slate-400 mt-6 uppercase tracking-widest">Baki Semasa (Gabungan)</h2>
-                    <div id="txtBakiBank" class="text-4xl md:text-5xl lg:text-6xl font-black text-yellow-400 mt-2 tracking-tight leading-tight">RM 0.00</div>
-                    
-                    <div class="flex gap-8 mt-6 border-t border-slate-700/50 pt-6">
-                        <div>
-                            <p class="text-[11px] text-slate-400 uppercase tracking-wider mb-1">Total Masuk</p>
-                            <p id="txtTotalMasukBank" class="text-xl font-bold text-emerald-400">RM 0.00</p>
-                        </div>
-                        <div>
-                            <p class="text-[11px] text-slate-400 uppercase tracking-wider mb-1">Total Keluar</p>
-                            <p id="txtTotalKeluarBank" class="text-xl font-bold text-rose-400">RM 0.00</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- KAD ALOKASI SUB-DANA -->
-            <div class="xl:col-span-8 lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- DANA AM PIBG -->
-                <div class="glass-card rounded-[2.5rem] p-8 border-t-8 border-t-blue-500 flex flex-col justify-between">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-xl font-bold text-slate-800 uppercase">1. Dana Am PIBG</h3>
-                            <p class="text-slate-500 text-sm mt-1">Sumbangan Sukarela, Ibu Bapa & Yuran</p>
-                        </div>
-                        <div class="bg-blue-100 p-3 rounded-2xl text-blue-600"><i class="fa-solid fa-scale-balanced text-xl"></i></div>
-                    </div>
-                    <div class="mt-6 bg-blue-50/50 rounded-2xl p-5 flex flex-col lg:flex-row lg:justify-between lg:items-end gap-4 border border-blue-100">
-                        <div>
-                            <p class="text-[11px] text-blue-900/60 uppercase font-bold tracking-widest mb-1">Baki Bersih</p>
-                            <p id="pibgBaki" class="text-3xl font-black text-blue-700">RM 0.00</p>
-                        </div>
-                        <div class="text-right text-xs bg-white px-3.5 py-2.5 rounded-xl shadow-sm space-y-1">
-                            <p class="text-emerald-600 font-bold"><i class="fa-solid fa-arrow-down mr-1"></i> <span id="pibgMasuk" class="text-sm">RM 0.00</span></p>
-                            <p class="text-rose-600 font-bold"><i class="fa-solid fa-arrow-up mr-1"></i> <span id="pibgKeluar" class="text-sm">RM 0.00</span></p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- DANA KELAS TAMBAHAN -->
-                <div class="glass-card rounded-[2.5rem] p-8 border-t-8 border-t-rose-500 flex flex-col justify-between">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-xl font-bold text-slate-800 uppercase">2. Kelas Tambahan</h3>
-                            <p class="text-slate-500 text-sm mt-1">Pembelajaran & Modul Belajar Murid</p>
-                        </div>
-                        <div class="bg-rose-100 p-3 rounded-2xl text-rose-600"><i class="fa-solid fa-graduation-cap text-xl"></i></div>
-                    </div>
-                    <div class="mt-6 bg-rose-50/50 rounded-2xl p-5 flex flex-col lg:flex-row lg:justify-between lg:items-end gap-4 border border-rose-100">
-                        <div>
-                            <p class="text-[11px] text-rose-900/60 uppercase font-bold tracking-widest mb-1">Baki Bersih</p>
-                            <p id="kelasBaki" class="text-3xl font-black text-rose-700">RM 0.00</p>
-                        </div>
-                        <div class="text-right text-xs bg-white px-3.5 py-2.5 rounded-xl shadow-sm space-y-1">
-                            <p class="text-emerald-600 font-bold"><i class="fa-solid fa-arrow-down mr-1"></i> <span id="kelasMasuk" class="text-sm">RM 0.00</span></p>
-                            <p class="text-rose-600 font-bold"><i class="fa-solid fa-arrow-up mr-1"></i> <span id="kelasKeluar" class="text-sm">RM 0.00</span></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- RUANGAN BORANG ADMIN -->
-        <div id="sectionBorangKewangan" class="block space-y-6 mt-10 bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-200 border-t-8 border-t-yellow-400">
-             <div class="flex flex-col lg:flex-row items-center justify-between border-b border-slate-100 pb-6 gap-4">
-                 <div class="flex items-center gap-4">
-                     <div class="bg-yellow-100 p-2.5 rounded-xl text-yellow-600"><i class="fa-solid fa-user-shield text-lg"></i></div>
-                     <h3 class="text-xl font-bold uppercase text-slate-800">Ruangan Pentadbir (Key-In Data Baru)</h3>
-                 </div>
-              </div>
-
-             <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                <!-- Wang Masuk -->
-                <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                    <h4 class="text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-plus"></i> Rekod Wang Masuk</h4>
-                    <form id="formDuitMasuk" class="space-y-4 text-sm">
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="date" id="tarikhMasuk" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
-                            <select id="pembahagianMasuk" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 font-bold outline-none">
-                                <option value="PIBG">DANA PIBG</option>
-                                <option value="Kelas Tambahan">KELAS TAMBAHAN</option>
-                            </select>
-                        </div>
-                        <input type="text" id="perincianMasuk" placeholder="Perincian Transaksi / Nama Pembayar" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
-                        <input type="number" step="0.01" id="amaunMasuk" placeholder="Amaun (RM)" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-base transition-colors">SIMPAN DUIT MASUK</button>
-                    </form>
-                </div>
-                
-                <!-- Wang Keluar -->
-                <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                    <h4 class="text-lg font-bold text-rose-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-minus"></i> Rekod Wang Keluar</h4>
-                    <form id="formDuitKeluar" class="space-y-4 text-sm">
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="date" id="tarikhKeluar" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
-                            <select id="pembahagianKeluar" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 font-bold outline-none">
-                                <option value="PIBG">DANA PIBG</option>
-                                <option value="Kelas Tambahan">KELAS TAMBAHAN</option>
-                            </select>
-                        </div>
-                        <input type="text" id="perincianKeluar" placeholder="Perincian Penerima / Tujuan" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
-                        <input type="number" step="0.01" id="amaunKeluar" placeholder="Amaun (RM)" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 outline-none">
-                        <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition-colors text-base shadow">SIMPAN DUIT KELUAR</button>
-                    </form>
-                </div>
-             </div>
-        </div>
-
-        <!-- BUKU TUNAI / JADUAL DATA TRANSAKSI -->
-        <section class="mt-10">
-            <div class="glass-card rounded-[2.5rem] overflow-hidden flex flex-col shadow-xl border-t-8 border-t-emerald-500">
-                <div class="p-6 bg-white border-b border-slate-200">
-                    <h3 class="text-xl font-bold text-slate-800">Senarai Transaksi Terkini</h3>
-                </div>
-                <div class="overflow-x-auto max-h-[500px] bg-white p-6">
-                    <table class="w-full text-left text-sm text-slate-600 border-collapse">
-                        <thead class="bg-slate-100 text-slate-800 uppercase font-bold sticky top-0">
-                            <tr>
-                                <th class="px-4 py-3 rounded-tl-xl">Tarikh</th>
-                                <th class="px-4 py-3">Perincian</th>
-                                <th class="px-4 py-3">Dana</th>
-                                <th class="px-4 py-3 text-emerald-600">Masuk (RM)</th>
-                                <th class="px-4 py-3 text-rose-600">Keluar (RM)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="jadualTransaksi">
-                            <tr><td colspan="5" class="text-center py-4 text-slate-400">Sedang memuat turun data...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- SKRIP FIREBASE REALTIME -->
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyD1qUSD8bJU7QAaQYfs6zngKQfSC5XI59Q",
-            authDomain: "bendahari-pibg.firebaseapp.com",
-            projectId: "bendahari-pibg",
-            storageBucket: "bendahari-pibg.firebasestorage.app",
-            messagingSenderId: "780920877564",
-            appId: "1:780920877564:web:f3cf19f4158d8aea5e4279"
-        };
-
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.firestore();
-
-        function initRealTimeData() {
-            db.collection("transaksi").onSnapshot((snapshot) => {
-                let totalMasuk = 0, totalKeluar = 0;
-                let pibgMasuk = 0, pibgKeluar = 0;
-                let kelasMasuk = 0, kelasKeluar = 0;
-                
-                let tbody = document.getElementById("jadualTransaksi");
-                tbody.innerHTML = "";
-
-                if(snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-400">Tiada rekod transaksi dijumpai.</td></tr>';
-                }
-
-                snapshot.forEach((doc) => {
-                    let data = doc.data();
-                    let amaun = parseFloat(data.amaun) || 0;
-                    let jenisData = data.jenis || "";
-                    let danaData = data.dana || "PIBG"; 
-                    let tarikhData = data.tarikh || "-";
-                    let perincianData = data.perincian || "-";
-                    
-                    let row = document.createElement("tr");
-                    row.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors";
-                    
-                    let selMasuk = jenisData === "masuk" ? `<span class="font-bold text-emerald-600">${amaun.toFixed(2)}</span>` : "-";
-                    let selKeluar = jenisData === "keluar" ? `<span class="font-bold text-rose-600">${amaun.toFixed(2)}</span>` : "-";
-
-                    row.innerHTML = `
-                        <td class="px-4 py-3">${tarikhData}</td>
-                        <td class="px-4 py-3 font-medium text-slate-700">${perincianData}</td>
-                        <td class="px-4 py-3"><span class="bg-slate-200 px-2 py-1 rounded text-xs font-bold">${danaData}</span></td>
-                        <td class="px-4 py-3">${selMasuk}</td>
-                        <td class="px-4 py-3">${selKeluar}</td>
-                    `;
-                    tbody.appendChild(row);
-
-                    if (jenisData === "masuk") {
-                        totalMasuk += amaun;
-                        if(danaData === "PIBG") pibgMasuk += amaun;
-                        if(danaData === "Kelas Tambahan") kelasMasuk += amaun;
-                    } else if (jenisData === "keluar") {
-                        totalKeluar += amaun;
-                        if(danaData === "PIBG") pibgKeluar += amaun;
-                        if(danaData === "Kelas Tambahan") kelasKeluar += amaun;
-                    }
-                });
-
-                let bakiSemasa = totalMasuk - totalKeluar;
-                document.getElementById("txtTotalMasukBank").innerText = "RM " + totalMasuk.toFixed(2);
-                document.getElementById("txtTotalKeluarBank").innerText = "RM " + totalKeluar.toFixed(2);
-                document.getElementById("txtBakiBank").innerText = "RM " + bakiSemasa.toFixed(2);
-
-                let pibgBaki = pibgMasuk - pibgKeluar;
-                document.getElementById("pibgMasuk").innerText = "RM " + pibgMasuk.toFixed(2);
-                document.getElementById("pibgKeluar").innerText = "RM " + pibgKeluar.toFixed(2);
-                document.getElementById("pibgBaki").innerText = "RM " + pibgBaki.toFixed(2);
-
-                let kelasBaki = kelasMasuk - kelasKeluar;
-                document.getElementById("kelasMasuk").innerText = "RM " + kelasMasuk.toFixed(2);
-                document.getElementById("kelasKeluar").innerText = "RM " + kelasKeluar.toFixed(2);
-                document.getElementById("kelasBaki").innerText = "RM " + kelasBaki.toFixed(2);
-
-            }, (error) => {
-                console.error("Ralat Firebase:", error);
-            });
-        }
-
-        // SIMPAN DATA MASUK
-        document.getElementById("formDuitMasuk").addEventListener("submit", function(e) {
-            e.preventDefault();
-            db.collection("transaksi").add({
-                tarikh: document.getElementById("tarikhMasuk").value,
-                perincian: document.getElementById("perincianMasuk").value,
-                dana: document.getElementById("pembahagianMasuk").value,
-                amaun: parseFloat(document.getElementById("amaunMasuk").value),
-                jenis: "masuk",
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                alert("Wang masuk berjaya direkodkan!");
-                document.getElementById("formDuitMasuk").reset();
-            }).catch((error) => {
-                alert("Ralat menyimpan data: " + error.message);
-            });
-        });
-
-        // SIMPAN DATA KELUAR
-        document.getElementById("formDuitKeluar").addEventListener("submit", function(e) {
-            e.preventDefault();
-            db.collection("transaksi").add({
-                tarikh: document.getElementById("tarikhKeluar").value,
-                perincian: document.getElementById("perincianKeluar").value,
-                dana: document.getElementById("pembahagianKeluar").value,
-                amaun: parseFloat(document.getElementById("amaunKeluar").value),
-                jenis: "keluar",
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                alert("Wang keluar berjaya direkodkan!");
-                document.getElementById("formDuitKeluar").reset();
-            }).catch((error) => {
-                alert("Ralat menyimpan data: " + error.message);
-            });
-        });
-
-        window.onload = function() {
-            initRealTimeData();
-        };
-
-        function bukaModalLaluan() {
-            alert("Sistem Log Masuk Admin akan datang.");
-        }
-    </script>
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 </body>
 </html>
