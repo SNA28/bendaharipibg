@@ -1,48 +1,158 @@
-{
-  "timestamp": "2026-07-21 14:30",
-  "sasaranKutipan": 50000.00,
-  "transaksi": [
-    {
-      "tarikh": "2026-07-21",
-      "keterangan": "Sumbangan Tabung Kebajikan & Hari Guru",
-      "kategori": "Kebajikan",
-      "jenis": "MASUK",
-      "jumlah": 4500.00
-    },
-    {
-      "tarikh": "2026-07-20",
-      "keterangan": "Sumbangan PIBG Sesi 2026/2027 (Tingkatan 1-5)",
-      "kategori": "Sumbangan Ahli",
-      "jenis": "MASUK",
-      "jumlah": 18500.00
-    },
-    {
-      "tarikh": "2026-07-18",
-      "keterangan": "Sponsorship Kejohanan Sukan & Olahraga Sekolah",
-      "kategori": "Tajaan",
-      "jenis": "MASUK",
-      "jumlah": 5000.00
-    },
-    {
-      "tarikh": "2026-07-15",
-      "keterangan": "Pembelian 2 Unit Smart TV & Projektor Bilik Tayang",
-      "kategori": "Infrastruktur",
-      "jenis": "KELUAR",
-      "jumlah": 4800.00
-    },
-    {
-      "tarikh": "2026-07-10",
-      "keterangan": "Program Motivasi & Teknik Menjawab SPM",
-      "kategori": "Akademik",
-      "jenis": "KELUAR",
-      "jumlah": 2300.00
-    },
-    {
-      "tarikh": "2026-07-05",
-      "keterangan": "Penyelenggaraan Pendingin Hawa Bilik Guru & Pusat Sumber",
-      "kategori": "Penyelenggaraan",
-      "jenis": "KELUAR",
-      "jumlah": 1200.00
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Bendahari PIBG</title>
+    <!-- Firebase SDK v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f6f9; }
+        .container { max-width: 650px; margin: auto; background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        .card-baki { background: #28a745; color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+        .card-baki h3 { margin: 0; font-size: 24px; }
+        form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
+        label { font-weight: bold; }
+        input, select, button { padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 6px; }
+        button { background: #007bff; color: white; font-weight: bold; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        .text-masuk { color: green; font-weight: bold; }
+        .text-keluar { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Sistem Bendahari PIBG</h2>
+    
+    <!-- Paparan Baki -->
+    <div class="card-baki">
+        <span>Baki Semasa Akaun</span>
+        <h3>RM <span id="baki-semasa">0.00</span></h3>
+    </div>
+
+    <!-- Borang -->
+    <form id="form-kewangan">
+        <label for="jenis">Jenis Transaksi:</label>
+        <select id="jenis">
+            <option value="masuk">Duit Masuk (Penerimaan)</option>
+            <option value="keluar">Duit Keluar (Perbelanjaan)</option>
+        </select>
+        
+        <label for="keterangan">Keterangan / Perkara:</label>
+        <input type="text" id="keterangan" placeholder="Contoh: Yuran PIBG / Sumbangan" required>
+        
+        <label for="jumlah">Jumlah (RM):</label>
+        <input type="number" step="0.01" id="jumlah" placeholder="Contoh: 150.00" required>
+        
+        <button type="submit">Simpan Transaksi</button>
+    </form>
+
+    <h3>Rekod Transaksi</h3>
+    <!-- Jadual -->
+    <table>
+        <thead>
+            <tr>
+                <th>Tarikh</th>
+                <th>Keterangan</th>
+                <th>Jenis</th>
+                <th>Jumlah (RM)</th>
+            </tr>
+        </thead>
+        <tbody id="jadual-data">
+            <tr>
+                <td colspan="4" style="text-align: center;">Memuatkan data...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Config Firebase Anda
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1qUSD8bJU7QAaQYfs6zngKQfSC5XI59Q",
+      authDomain: "bendahari-pibg.firebaseapp.com",
+      projectId: "bendahari-pibg",
+      storageBucket: "bendahari-pibg.firebasestorage.app",
+      messagingSenderId: "780920877564",
+      appId: "1:780920877564:web:f3cf19f4158d8aea5e4279"
+    };
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
     }
-  ]
-}
+    const db = firebase.firestore();
+
+    // Simpan Data
+    document.getElementById("form-kewangan").addEventListener("submit", function(e) {
+        e.preventDefault();
+        
+        const jenis = document.getElementById("jenis").value;
+        const keterangan = document.getElementById("keterangan").value;
+        const jumlah = parseFloat(document.getElementById("jumlah").value);
+
+        db.collection("transaksi").add({
+            jenis: jenis,
+            keterangan: keterangan,
+            jumlah: jumlah,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            tarikhStr: new Date().toLocaleDateString('ms-MY')
+        }).then(() => {
+            alert("Berjaya disimpan!");
+            document.getElementById("form-kewangan").reset();
+        }).catch((error) => {
+            alert("Gagal simpan: " + error.message);
+        });
+    });
+
+    // Baca Data & Kira Baki Secara Realtime
+    db.collection("transaksi").orderBy("timestamp", "desc").onSnapshot((querySnapshot) => {
+        let tbody = document.getElementById("jadual-data");
+        tbody.innerHTML = "";
+        let totalMasuk = 0;
+        let totalKeluar = 0;
+
+        if (querySnapshot.empty) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;">Tiada rekod transaksi dijumpai. SILA ISI DATO PERTAMA ANDA.</td></tr>`;
+            document.getElementById("baki-semasa").innerText = "0.00";
+            return;
+        }
+
+        querySnapshot.forEach((doc) => {
+            let data = doc.data();
+            let tarikh = data.tarikhStr || "Baru sahaja";
+            
+            if(data.jenis === "masuk") { 
+                totalMasuk += data.jumlah; 
+            } else { 
+                totalKeluar += data.jumlah; 
+            }
+
+            let classWarna = data.jenis === "masuk" ? "text-masuk" : "text-keluar";
+            let jenisTeks = data.jenis === "masuk" ? "Masuk" : "Keluar";
+
+            let row = `<tr>
+                <td>${tarikh}</td>
+                <td>${data.keterangan}</td>
+                <td class="${classWarna}">${jenisTeks}</td>
+                <td class="${classWarna}">RM ${data.jumlah.toFixed(2)}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+
+        let bakiSemasa = totalMasuk - totalKeluar;
+        document.getElementById("baki-semasa").innerText = bakiSemasa.toFixed(2);
+    }, (error) => {
+        console.error("Error:", error);
+        document.getElementById("jadual-data").innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Ralat sambungan: Sila pastikan Firestore Rules disetkan kepada 'allow read, write: if true;'</td></tr>`;
+    });
+</script>
+
+</body>
+</html>
